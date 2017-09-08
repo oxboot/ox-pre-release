@@ -1,0 +1,16 @@
+{
+  "directories": ["src", "templates"],
+  "finder": [
+    {
+      "name": "*.php",
+      "exclude": [
+        "tests",
+        "test"
+      ],
+      "in": "vendor"
+    }
+  ],
+  "main": "ox.php",
+  "output": "ox.phar",
+  "stub": true
+}
