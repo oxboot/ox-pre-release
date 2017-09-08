@@ -35,6 +35,14 @@ function ox_install()
   add-apt-repository -y 'ppa:ondrej/php' -y
   apt-get update &>> /dev/null
   apt-get -y install php7.1-cli || ox_lib_echo_fail "Unable to install PHP-CLI 7.1, exit status " 1
+  ox_lib_echo "Create Ox database folder, please wait..."
+  if [ ! -d /var/lib/ox/ ]; then
+    mkdir -p /var/lib/ox/
+    chown -R root:root /var/lib/ox/
+    chmod -R 600 /var/lib/ox/
+  else
+    ox_lib_echo "Ox database folder already exists"
+  fi
 }
 
 # Starting script point
