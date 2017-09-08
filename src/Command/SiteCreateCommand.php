@@ -10,7 +10,7 @@ class SiteCreateCommand extends Command
         $this
             ->setName('site:create')
             ->setDescription('Create a new site')
-            ->setHelp('This command allows you to create a site')
+            ->setHelp('This command allows you to create a new site')
         ;
     }
 }
