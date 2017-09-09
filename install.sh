@@ -32,7 +32,7 @@ function ox_install()
   ox_lib_echo "Install pre depedencies(Git, Curl, Gzip & Tar), please wait..."
   apt-get -y install git curl gzip tar || ee_lib_error "Unable to install pre depedencies, exit status " 1
   ox_lib_echo "Install PHP-CLI 7.1, please wait..."
-  add-apt-repository -y 'ppa:ondrej/php' -y
+  add-apt-repository -y 'ppa:ondrej/php'
   apt-get update &>> /dev/null
   apt-get -y install php7.1-cli || ox_lib_echo_fail "Unable to install PHP-CLI 7.1, exit status " 1
   ox_lib_echo "Create Ox database folder, please wait..."
