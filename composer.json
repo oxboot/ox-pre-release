@@ -13,7 +13,8 @@
     "symfony/process": "^3.3",
     "mustache/mustache": "^2.12",
     "symfony/filesystem": "^3.3",
-    "symfony/yaml": "^3.3"
+    "symfony/yaml": "^3.3",
+    "pimple/pimple": "^3.2"
   },
   "autoload": {
     "psr-4": {

@@ -6,9 +6,7 @@ define('OX_VERSION', '0.0.0');
 
 require OX_ROOT . 'vendor/autoload.php';
 
-$application = new \Symfony\Component\Console\Application('ox ' . OX_VERSION);
+$app = new \Ox\App();
+$console = new \Ox\ConsoleApp($app);
 
-$application->add(new Ox\Command\SiteCreateCommand());
-$application->add(new Ox\Command\SiteDeleteCommand());
-
-$application->run();
+$console->run();
