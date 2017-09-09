@@ -9,6 +9,11 @@ class ConsoleApp extends SymfonyConsoleApplication
 {
     private $app;
 
+    public function getApp()
+    {
+        return $this->app;
+    }
+
     public function __construct(App $app)
     {
         $this->app = $app;

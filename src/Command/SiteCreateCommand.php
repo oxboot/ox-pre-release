@@ -9,7 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
 
-class SiteCreateCommand extends Command
+class SiteCreateCommand extends BaseCommand
 {
     protected function configure()
     {
@@ -22,7 +22,6 @@ class SiteCreateCommand extends Command
             ->addOption('mysql', null, InputOption::VALUE_NONE, 'MySQL support')
         ;
     }
-
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
