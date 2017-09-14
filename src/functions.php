@@ -8,8 +8,10 @@ use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 
 function ox_echo($message, $color = 'white')
 {
-    $output = new ConsoleOutput();
-    $output->writeln('<fg=' . $color .'>' . $message . '</>');
+    if ($message) {
+        $output = new ConsoleOutput();
+        $output->writeln('<fg=' . $color .'>' . $message . '</>');
+    }
 }
 
 function ox_echo_info($message)
