@@ -1,6 +1,8 @@
 <?php
 namespace Ox;
 
+use Noodlehaus\Exception;
+use Noodlehaus\Exception\FileNotFoundException;
 use Pimple\Container;
 use Noodlehaus\Config;
 use Noodlehaus\ErrorException;
@@ -13,14 +15,18 @@ class App extends Container
         parent::__construct();
         $app = $this;
 
-        try {
-            $app['config'] = Config::load(OX_CONFIG_FOLDER . 'ox.ini');
-        } catch (ErrorException $e) {
-            ox_echo_error('Error loading Ox config: ' . $e);
-        }
-
         $app['filesystem'] = $app->factory(function ($c) {
             return new Filesystem();
         });
+
+        try {
+            $config_file = OX_CONFIG_FOLDER . 'ox.ini';
+            if (!$app['filesystem']->exists($config_file)) {
+                $app['filesystem']->dumpFile($config_file, ox_template('config/ox'));
+            }
+            $app['config'] = Config::load(OX_CONFIG_FOLDER . 'ox.ini');
+        } catch (Exception $e) {
+            ox_echo_error('Error loading Ox config: ' . $e);
+        }
     }
 }

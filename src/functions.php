@@ -3,6 +3,8 @@
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 
 function ox_echo($message, $color = 'white')
 {
@@ -31,9 +33,27 @@ function ox_exec($command)
     try {
         $process->mustRun();
         ox_echo_info($process->getOutput());
-        return true;
     } catch (ProcessFailedException $e) {
         ox_echo_error($e->getMessage());
         return false;
     }
+    return true;
+}
+
+function ox_mkdir($dir)
+{
+    $fs = new Filesystem();
+    try {
+        $fs->mkdir($dir, 0755);
+    } catch (IOExceptionInterface $e) {
+        echo $e;
+        return false;
+    }
+    return true;
+}
+
+function ox_template($template, $data = null)
+{
+    $m = new Mustache_Engine(['loader' => new Mustache_Loader_FilesystemLoader(OX_ROOT . '/templates')]);
+    return $m->render($template, $data);
 }

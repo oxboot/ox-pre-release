@@ -1,7 +1,7 @@
 <?php
 namespace Ox\Command;
 
-use Ox\Utils;
+use Ox\MySQL;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -18,15 +18,17 @@ class SiteCreateCommand extends BaseCommand
             ->setDescription('Create a new site')
             ->setHelp('This command allows you to create a new site')
             ->addArgument('site_name', InputArgument::REQUIRED, 'Name of the site')
-            ->addOption('php', null, InputOption::VALUE_NONE, 'PHP support')
             ->addOption('mysql', null, InputOption::VALUE_NONE, 'MySQL support')
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $fs = $this->app['filesystem'];
+        $config = $this->app['config'];
         $site_name = $input->getArgument('site_name');
-        $php_support = $input->getOption('php');
+        $site_dir = '/var/www/'.$site_name;
+        $site_webdir = $site_dir.DS.$config->get('main.public');
         $mysql_support = $input->getOption('mysql');
 
         $stack_file = OX_DB_FOLDER . 'stack.yml';
@@ -39,44 +41,29 @@ class SiteCreateCommand extends BaseCommand
             }
         } else {
             try {
-                $this->app['filesystem']->dumpFile($stack_file, '');
+                $fs->dumpFile($stack_file, '');
             } catch (ParseException $e) {
-                ox_echo_error('Unable to write Ox stack config: ' . $e);
+                ox_echo_error('Unable to create Ox stack config: ' . $e);
                 exit;
             }
         }
-        if ($php_support && !$stack['php']) {
-            ox_echo_info('Installing PHP 7.1, please wait...');
-            ox_exec("add-apt-repository -y 'ppa:ondrej/php'");
-            ox_exec('apt-get update &>> /dev/null');
-            ox_exec('apt-get -y install ' . $this->app['config']->get('apt.php71'));
-            $stack['php'] = true;
-            try {
-                $this->app['filesystem']->dumpFile($stack_file, Yaml::dump($stack));
-            } catch (ParseException $e) {
-                ox_echo_error('Unable to write Ox stack config: ' . $e);
-                exit;
-            }
+        if ($fs->exists($site_dir)) {
+            ox_echo_error('Site ' . $site_name . ' already exists');
+            exit;
         }
+        ox_mkdir($site_webdir);
+        $fs->dumpFile($config->get('nginx.sites-available').DS.$site_name, ox_template('nginx/site', ['site_name' => $input->getArgument('site_name')]));
+        $fs->symlink($config->get('nginx.sites-available').DS.$site_name, $config->get('nginx.sites-enabled').DS.$site_name);
+        $fs->dumpFile($site_webdir.'/index.php', ox_template('php/default', ['site_name' => $site_name]));
         if ($mysql_support && !$stack['mysql']) {
-            ox_echo_info('Installing MariaDB 10.2, please wait...');
-            ox_exec('apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8');
-            ox_exec("add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://ams2.mirrors.digitalocean.com/mariadb/repo/10.2/ubuntu xenial main'");
-            ox_exec('apt-get update &>> /dev/null');
-            $mysql_password = Utils::randomString(8);
-            $mysql_config = "[client] \n user = root\n password = " . $mysql_password;
-            ox_exec("echo \"mariadb-server mysql-server/root_password password " . $mysql_password . "\"" . " | debconf-set-selections");
-            ox_exec("echo \"mariadb-server mysql-server/root_password_again password " . $mysql_password . "\"" . " | debconf-set-selections");
-            ox_echo_info('Writting MySQL configuration...');
-            $conf_path = '/etc/mysql/conf.d/my.cnf';
-            $this->app['filesystem']->dumpFile($conf_path, $mysql_config);
-            ox_exec('apt-get -y install mariadb-server');
-            $stack['mysql'] = true;
-            try {
-                $this->app['filesystem']->dumpFile($stack_file, Yaml::dump($stack));
-            } catch (ParseException $e) {
-                ox_echo_error('Unable to write Ox stack config: ' . $e);
-                exit;
+            $stack['mysql'] = MySQL::install();
+            if ($stack['mysql']) {
+                try {
+                    $fs->dumpFile($stack_file, Yaml::dump($stack));
+                } catch (ParseException $e) {
+                    ox_echo_error('Unable to write Ox stack config: ' . $e);
+                    exit;
+                }
             }
         }
     }
