@@ -2,6 +2,7 @@
 namespace Ox\Command;
 
 use Ox\MySQL;
+use Ox\Utils;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -63,9 +64,9 @@ class SiteCreateCommand extends BaseCommand
         }
         ox_chown($site_dir, 'www-data', 'www-data');
         ox_exec('service nginx restart');
-        if ($mysql_support && !$stack['mysql']) {
-            $stack['mysql'] = MySQL::install();
-            if ($stack['mysql']) {
+        if ($mysql_support) {
+            if (!$stack['mysql']) {
+                $stack['mysql'] = MySQL::install();
                 try {
                     $fs->dumpFile($stack_file, Yaml::dump($stack));
                 } catch (ParseException $e) {
@@ -73,6 +74,11 @@ class SiteCreateCommand extends BaseCommand
                     return false;
                 }
             }
+            $mysql_site_user = $site_name.'_user_'.Utils::randomString(8);
+            $mysql_site_password = Utils::randomString(8);
+            $mysql_site_db = $site_name.'_db_'.Utils::randomString(8);
+            //MySQL::create($mysql_site_user, $mysql_site_password, $mysql_site_db);
+            MySQL::create('root', 'kASop6EO', 'root');
         }
         ox_echo_success('Site '.$site_name.' created successful');
         return true;
