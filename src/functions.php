@@ -52,6 +52,19 @@ function ox_mkdir($dir)
     return true;
 }
 
+function ox_chown($dir, $owner, $group)
+{
+    $fs = new Filesystem();
+    try {
+        $fs->chown($dir, $owner, true);
+        $fs->chgrp($dir, $group, true);
+    } catch (IOExceptionInterface $e) {
+        echo $e;
+        return false;
+    }
+    return true;
+}
+
 function ox_template($template, $data = null)
 {
     $m = new Mustache_Engine(['loader' => new Mustache_Loader_FilesystemLoader(OX_ROOT . '/templates')]);

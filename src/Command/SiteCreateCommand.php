@@ -55,6 +55,13 @@ class SiteCreateCommand extends BaseCommand
         $fs->dumpFile($config->get('nginx.sites-available').DS.$site_name, ox_template('nginx/site', ['site_name' => $input->getArgument('site_name')]));
         $fs->symlink($config->get('nginx.sites-available').DS.$site_name, $config->get('nginx.sites-enabled').DS.$site_name);
         $fs->dumpFile($site_webdir.'/index.php', ox_template('php/default', ['site_name' => $site_name]));
+        if (!ox_exec('nginx -t') || !$fs->exists([$site_dir, '/etc/nginx/sites-available/' . $site_name, '/etc/nginx/sites-enabled/' . $site_name])) {
+            $fs->remove([$site_dir, $config->get('nginx.sites-available').DS.$site_name, $config->get('nginx.sites-enabled').DS.$site_name]);
+            ox_echo_error('Site ' . $site_name . ' not created, error occurred');
+            exit;
+        }
+        ox_chown($site_dir, 'www-data', 'www-data');
+        ox_exec('service nginx restart');
         if ($mysql_support && !$stack['mysql']) {
             $stack['mysql'] = MySQL::install();
             if ($stack['mysql']) {
