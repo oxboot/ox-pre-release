@@ -73,5 +73,6 @@ class SiteCreateCommand extends BaseCommand
                 }
             }
         }
+        return true;
     }
 }
