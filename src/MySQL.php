@@ -17,7 +17,7 @@ class MySQL
             ox_exec("add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://ams2.mirrors.digitalocean.com/mariadb/repo/10.2/ubuntu xenial main'");
             ox_exec('apt-get update &>> /dev/null');
             $mysql_password = Utils::randomString(8);
-            $mysql_config = "[client] \n user = root\n password = ".$mysql_password;
+            $mysql_config = "[client] \nuser = root\npassword = ".$mysql_password;
             ox_exec("echo \"mariadb-server mysql-server/root_password password ".$mysql_password."\""." | debconf-set-selections");
             ox_exec("echo \"mariadb-server mysql-server/root_password_again password ".$mysql_password."\""." | debconf-set-selections");
             ox_echo_info('Writting MySQL configuration...');
@@ -42,7 +42,18 @@ class MySQL
         return $db;
     }
 
-    public static function create($mysql_site_user, $mysql_site_password, $mysql_site_db)
+    public static function createUser($mysql_site_user, $mysql_site_password)
+    {
+        try {
+            $db = self::connect();
+        } catch (\Exception $e) {
+            ox_echo_error('Error creating user: ' . $e);
+            return false;
+        }
+        return true;
+    }
+
+    public static function createDb($mysql_site_db)
     {
         try {
             var_dump(Config::load(self::$conf_path));

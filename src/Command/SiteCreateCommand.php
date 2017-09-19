@@ -78,7 +78,7 @@ class SiteCreateCommand extends BaseCommand
             $mysql_site_password = Utils::randomString(8);
             $mysql_site_db = $site_name.'_db_'.Utils::randomString(8);
             //MySQL::create($mysql_site_user, $mysql_site_password, $mysql_site_db);
-            MySQL::create('root', 'kASop6EO', 'root');
+            MySQL::install();
         }
         ox_echo_success('Site '.$site_name.' created successful');
         return true;
