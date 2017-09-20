@@ -27,7 +27,7 @@ class SiteDeleteCommand extends BaseCommand
         $site_dir = '/var/www/'.$site_name;
         $site_webdir = $site_dir . '/htdocs';
         $helper = $this->getHelper('question');
-        $question = new ConfirmationQuestion('Delete site: Are you sure(y/N)?', false);
+        $question = new ConfirmationQuestion('Delete site '.$site_name.': Are you sure(y/N)?', false);
         if (!$helper->ask($input, $output, $question)) {
             ox_echo_success('Operation canceled');
             return false;

@@ -1,12 +1,10 @@
 <?php
 namespace Ox;
 
-use Noodlehaus\Exception;
-use Noodlehaus\Exception\FileNotFoundException;
 use Pimple\Container;
-use Noodlehaus\Config;
-use Noodlehaus\ErrorException;
 use Symfony\Component\Filesystem\Filesystem;
+use Noodlehaus\Config;
+use Noodlehaus\Exception;
 
 class App extends Container
 {

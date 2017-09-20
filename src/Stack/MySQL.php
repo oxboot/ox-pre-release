@@ -1,18 +1,19 @@
 <?php
-namespace Ox;
+namespace Ox\Stack;
 
-use Noodlehaus\Config;
+use Ox\Utils;
 use Symfony\Component\Filesystem\Filesystem;
 
 class MySQL
 {
-    private static $conf_path = '/etc/mysql/conf.d/my.cnf';
+    private static $conf_path = '/etc/mysql';
+    private static $conf_file = '/etc/mysql/conf.d/my.cnf';
 
     public static function install()
     {
         try {
             $fs = new Filesystem();
-            ox_echo_info('Installing MariaDB 10.2, please wait...');
+            ox_echo_info('Installing MySQL, please wait...');
             ox_exec('apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8');
             ox_exec("add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://ams2.mirrors.digitalocean.com/mariadb/repo/10.2/ubuntu xenial main'");
             ox_exec('apt-get update &>> /dev/null');
@@ -21,10 +22,26 @@ class MySQL
             ox_exec("echo \"mariadb-server mysql-server/root_password password ".$mysql_password."\""." | debconf-set-selections");
             ox_exec("echo \"mariadb-server mysql-server/root_password_again password ".$mysql_password."\""." | debconf-set-selections");
             ox_echo_info('Writting MySQL configuration...');
-            $fs->dumpFile(self::$conf_path, $mysql_config);
+            $fs->dumpFile(self::$conf_file, $mysql_config);
             ox_exec('apt-get -y install mariadb-server');
         } catch (\Exception $e) {
             ox_echo_error('Error installing MySQL: '.$e);
+            return false;
+        }
+        return true;
+    }
+
+    public static function uninstall()
+    {
+        try {
+            $fs = new Filesystem();
+            ox_echo_info('Uninstalling MySQL, please wait...');
+            ox_exec('apt-get -y purge mariadb-server');
+            ox_exec('apt-get -y --purge autoremove');
+            ox_echo_info('Remove MySQL configuration...');
+            $fs->remove(self::$conf_path);
+        } catch (\Exception $e) {
+            ox_echo_error('Error uninstalling MySQL: '.$e);
             return false;
         }
         return true;
@@ -56,7 +73,10 @@ class MySQL
     public static function createDb($mysql_site_db)
     {
         try {
-            var_dump(Config::load(self::$conf_path));
+            $mysql_root = parse_ini_file(self::$conf_file);
+            $db = self::connect($mysql_root['user'], $mysql_root['password']);
+            $db->exec('CREATE DATABASE '.$mysql_site_db);
+            ox_echo_error('Database '.$mysql_site_db.' created successful');
         } catch (\Exception $e) {
             ox_echo_error('Error creating database: ' . $e);
             return false;

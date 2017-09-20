@@ -1,8 +1,8 @@
 <?php
 namespace Ox\Command;
 
-use Ox\MySQL;
 use Ox\Utils;
+use Ox\Stack\MySQL;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -74,11 +74,10 @@ class SiteCreateCommand extends BaseCommand
                     return false;
                 }
             }
-            $mysql_site_user = $site_name.'_user_'.Utils::randomString(8);
+            $mysql_site_user = str_replace('.', '', $site_name).'_user_'.Utils::randomString(8);
             $mysql_site_password = Utils::randomString(8);
-            $mysql_site_db = $site_name.'_db_'.Utils::randomString(8);
-            //MySQL::create($mysql_site_user, $mysql_site_password, $mysql_site_db);
-            MySQL::install();
+            $mysql_site_db = str_replace('.', '', $site_name).'_db_'.Utils::randomString(8);
+            MySQL::createDb($mysql_site_db);
         }
         ox_echo_success('Site '.$site_name.' created successful');
         return true;
