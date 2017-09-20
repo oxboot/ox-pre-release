@@ -62,9 +62,26 @@ class MySQL
     public static function createUser($mysql_site_user, $mysql_site_password)
     {
         try {
-            $db = self::connect();
+            $mysql_root = parse_ini_file(self::$conf_file);
+            $db = self::connect($mysql_root['user'], $mysql_root['password']);
+            $db->exec("CREATE USER '".$mysql_site_user."'@'localhost' IDENTIFIED BY '".$mysql_site_password."'");
+            ox_echo_error('User '.$mysql_site_user.' created successful');
         } catch (\Exception $e) {
-            ox_echo_error('Error creating user: ' . $e);
+            ox_echo_error('Error creating user'.$mysql_site_user.': ' . $e);
+            return false;
+        }
+        return true;
+    }
+
+    public static function deleteUser($mysql_site_user)
+    {
+        try {
+            $mysql_root = parse_ini_file(self::$conf_file);
+            $db = self::connect($mysql_root['user'], $mysql_root['password']);
+            $db->exec("DROP USER '".$mysql_site_user."'@'localhost'");
+            ox_echo_error('User '.$mysql_site_user.' deleted successful');
+        } catch (\Exception $e) {
+            ox_echo_error('Error deleting user'.$mysql_site_user.': ' . $e);
             return false;
         }
         return true;
@@ -78,7 +95,21 @@ class MySQL
             $db->exec('CREATE DATABASE '.$mysql_site_db);
             ox_echo_error('Database '.$mysql_site_db.' created successful');
         } catch (\Exception $e) {
-            ox_echo_error('Error creating database: ' . $e);
+            ox_echo_error('Error creating database '.$mysql_site_db.':' . $e);
+            return false;
+        }
+        return true;
+    }
+
+    public static function deleteDb($mysql_site_db)
+    {
+        try {
+            $mysql_root = parse_ini_file(self::$conf_file);
+            $db = self::connect($mysql_root['user'], $mysql_root['password']);
+            $db->exec('DROP DATABASE '.$mysql_site_db);
+            ox_echo_error('Database '.$mysql_site_db.' dropped successful');
+        } catch (\Exception $e) {
+            ox_echo_error('Database '.$mysql_site_db.' drop error: ' . $e);
             return false;
         }
         return true;

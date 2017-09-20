@@ -31,8 +31,9 @@ class SiteCreateCommand extends BaseCommand
         $site_dir = '/var/www/'.$site_name;
         $site_webdir = $site_dir.DS.$config->get('main.public');
         $mysql_support = $input->getOption('mysql');
+        $stack_file = OX_DB_FOLDER.'stack.yml';
+        $site_file = OX_DB_FOLDER.'/sites/'.$site_name.'.yml';
 
-        $stack_file = OX_DB_FOLDER . 'stack.yml';
         if (file_exists($stack_file)) {
             try {
                 $stack = Yaml::parse(file_get_contents($stack_file));
@@ -49,10 +50,17 @@ class SiteCreateCommand extends BaseCommand
             }
         }
         ox_echo_info('Try to create site '.$site_name);
-        if ($fs->exists($site_dir)) {
-            ox_echo_error('Site '.$site_name.' already exists');
+
+        if ($fs->exists($site_file)) {
+            ox_echo_error('Site '.$site_name.' config already exists');
             return false;
         }
+
+        if ($fs->exists($site_dir)) {
+            ox_echo_error('Site '.$site_name.' folder already exists');
+            return false;
+        }
+
         ox_mkdir($site_webdir);
         $fs->dumpFile($config->get('nginx.sites-available').DS.$site_name, ox_template('nginx/site', ['site_name' => $input->getArgument('site_name')]));
         $fs->symlink($config->get('nginx.sites-available').DS.$site_name, $config->get('nginx.sites-enabled').DS.$site_name);
@@ -78,6 +86,16 @@ class SiteCreateCommand extends BaseCommand
             $mysql_site_password = Utils::randomString(8);
             $mysql_site_db = str_replace('.', '', $site_name).'_db_'.Utils::randomString(8);
             MySQL::createDb($mysql_site_db);
+            MySQL::createUser($mysql_site_user, $mysql_site_password);
+            $site['db_name'] = $mysql_site_db;
+            $site['db_user'] = $mysql_site_user;
+            $site['db_pass'] = $mysql_site_password;
+            try {
+                $fs->dumpFile($site_file, Yaml::dump($site));
+            } catch (ParseException $e) {
+                ox_echo_error('Unable to write site '.$site_name.' config: '.$e);
+                return false;
+            }
         }
         ox_echo_success('Site '.$site_name.' created successful');
         return true;
