@@ -1,6 +1,7 @@
 <?php
 namespace Ox\Command;
 
+use Ox\Stack\WPCLI;
 use Ox\Utils;
 use Ox\Stack\PHP;
 use Ox\Stack\MySQL;
@@ -21,7 +22,7 @@ class SiteCreateCommand extends BaseCommand
             ->setHelp('This command allows you to create a new site')
             ->addArgument('site_name', InputArgument::REQUIRED, 'Name of the site')
             ->addOption('mysql', null, InputOption::VALUE_NONE, 'MySQL support')
-            ->addOption('package', null, InputOption::VALUE_OPTIONAL, 'Packages install')
+            ->addOption('package', null, InputOption::VALUE_OPTIONAL, 'Name of the package to install')
         ;
     }
 
@@ -34,7 +35,7 @@ class SiteCreateCommand extends BaseCommand
         $site_webdir = $site_dir.DS.$config->get('main.public');
         $mysql_support = $input->getOption('mysql');
         $package = $input->getOption('package');
-        $stack['php'] = false;
+        $stack = [];
         $stack_file = OX_DB_FOLDER.'stack.yml';
         $site_file = OX_DB_FOLDER.'/sites/'.$site_name.'.yml';
 
@@ -86,8 +87,20 @@ class SiteCreateCommand extends BaseCommand
                 return false;
             }
         }
+        if ($package) {
+            if (file_exists(OX_ROOT . '/packages/').$package.'.yml') {
+                ox_echo('Package '.$package.' exists');
+                $package_config = Yaml::parse(file_get_contents(OX_ROOT . '/packages/'.$package.'.yml'));
+                if (in_array('mysql', $package_config['dependencies'])) {
+                    $mysql_support = true;
+                }
+                if (in_array('wp-cli', $package_config['dependencies'])) {
+                    WPCLI::install();
+                }
+            }
+        }
         if ($mysql_support) {
-            if (!$stack['mysql']) {
+            if (!isset($stack['mysql'])) {
                 $stack['mysql'] = MySQL::install();
                 try {
                     $fs->dumpFile($stack_file, Yaml::dump($stack));
@@ -101,6 +114,7 @@ class SiteCreateCommand extends BaseCommand
             $mysql_site_db = str_replace('.', '', $site_name).'_db_'.Utils::randomString(8);
             MySQL::createDb($mysql_site_db);
             MySQL::createUser($mysql_site_user, $mysql_site_password);
+            MySQL::grantDbUser($mysql_site_db, $mysql_site_user);
             $site['db_name'] = $mysql_site_db;
             $site['db_user'] = $mysql_site_user;
             $site['db_pass'] = $mysql_site_password;
@@ -111,13 +125,28 @@ class SiteCreateCommand extends BaseCommand
                 return false;
             }
         }
-        ox_echo_success('Site '.$site_name.' created successful');
 
         if ($package) {
             if (file_exists(OX_ROOT . '/packages/').$package.'.yml') {
-                ox_echo('Package '.$package.' exists');
+                $package_config = Yaml::parse(file_get_contents(OX_ROOT . '/packages/'.$package.'.yml'));
+                if (isset($package_config['commands'])) {
+                    foreach ($package_config['commands'] as $command) {
+                        ox_exec(ox_mustache($command, [
+                            'site_webdir' => $site_webdir,
+                            'db_name' => $site['db_name'],
+                            'db_user' => $site['db_user'],
+                            'db_pass' => $site['db_pass'],
+                            'title' => $site_name,
+                            'url' => 'http://'.$site_name,
+                            'admin_user' => 'admin',
+                            'admin_email' => 'no-reply@'.$site_name
+                        ]), 'www-data');
+                    }
+                }
             }
         }
+
+        ox_echo_success('Site '.$site_name.' created successful');
         return true;
     }
 }

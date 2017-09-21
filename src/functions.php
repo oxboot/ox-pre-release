@@ -29,8 +29,11 @@ function ox_echo_error($message)
     ox_echo($message, 'red');
 }
 
-function ox_exec($command)
+function ox_exec($command, $user = false)
 {
+    if ($user) {
+        $command = "su -p ".$user." -c \"".$command."\"";
+    }
     $process = new Process($command);
     try {
         $process->mustRun();
@@ -65,6 +68,12 @@ function ox_chown($dir, $owner, $group)
         return false;
     }
     return true;
+}
+
+function ox_mustache($string, $data = null)
+{
+    $m = new Mustache_Engine;
+    return $m->render($string, $data);
 }
 
 function ox_template($template, $data = null)

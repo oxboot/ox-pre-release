@@ -10,15 +10,11 @@ class WPCLI
         try {
             $fs = new Filesystem();
             ox_echo_info('Installing WP CLI stack component, please wait...');
-            ox_exec("php -r \"copy('https://getcomposer.org/installer', 'composer-setup.php');\"");
-            ox_exec("php -r \"if (hash_file('SHA384', 'composer-setup.php') === '544e09ee996cdf60ece3804abc52599c22b1f40f4323403c44d44fdfdd586475ca9813a858088ffbc1f233e9b180f061') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;\"");
-            ox_exec('php composer-setup.php');
-            ox_exec("php -r \"unlink('composer-setup.php');\"");
-            ox_exec("mv composer.phar /usr/local/bin/composer");
-            ox_echo_info('Writing Composer stack component configuration...');
-            ox_exec('service php7.1-fpm restart');
+            ox_exec("curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar");
+            ox_exec("chmod +x wp-cli.phar");
+            ox_exec("mv wp-cli.phar /usr/local/bin/wp");
         } catch (\Exception $e) {
-            ox_echo_error('Error installing Composer stack component: '.$e);
+            ox_echo_error('Error installing WP CLI stack component: '.$e);
             return false;
         }
         return true;

@@ -116,4 +116,20 @@ class MySQL
         }
         return true;
     }
+
+
+    public static function grantDbUser($mysql_site_db, $mysql_site_user)
+    {
+        try {
+            $mysql_root = parse_ini_file(self::$conf_file);
+            $db = self::connect($mysql_root['user'], $mysql_root['password']);
+            $db->exec('GRANT ALL PRIVILEGES ON '.$mysql_site_db.'.* TO '.$mysql_site_user.'@localhost');
+            $db->exec('FLUSH PRIVILEGES');
+            ox_echo_error('Grant privileges of user '.$mysql_site_user.' to database '.$mysql_site_db.' done successful');
+        } catch (\Exception $e) {
+            ox_echo_error('Grant privileges of user '.$mysql_site_user.' to database '.$mysql_site_db.' error: ' . $e);
+            return false;
+        }
+        return true;
+    }
 }
