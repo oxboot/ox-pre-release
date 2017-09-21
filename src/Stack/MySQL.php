@@ -23,6 +23,8 @@ class MySQL
             ox_exec("echo \"mariadb-server mysql-server/root_password_again password ".$mysql_password."\""." | debconf-set-selections");
             ox_echo_info('Writting MySQL stack component configuration...');
             $fs->dumpFile(self::$conf_file, $mysql_config);
+            ox_echo_info('Installing MySQL server...');
+            ox_exec('apt-get install -y mariadb-server');
             ox_exec('service mysql restart');
         } catch (\Exception $e) {
             ox_echo_error('Error installing MySQL stack component: '.$e);

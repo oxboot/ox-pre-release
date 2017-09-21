@@ -34,8 +34,8 @@ class SiteCreateCommand extends BaseCommand
         $site_webdir = $site_dir.DS.$config->get('main.public');
         $mysql_support = $input->getOption('mysql');
         $package = $input->getOption('package');
+        $stack['php'] = false;
         $stack_file = OX_DB_FOLDER.'stack.yml';
-        $stack = [];
         $site_file = OX_DB_FOLDER.'/sites/'.$site_name.'.yml';
 
         if (file_exists($stack_file)) {
