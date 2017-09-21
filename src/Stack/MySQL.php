@@ -13,7 +13,7 @@ class MySQL
     {
         try {
             $fs = new Filesystem();
-            ox_echo_info('Installing MySQL, please wait...');
+            ox_echo_info('Installing MySQL stack component, please wait...');
             ox_exec('apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8');
             ox_exec("add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://ams2.mirrors.digitalocean.com/mariadb/repo/10.2/ubuntu xenial main'");
             ox_exec('apt-get update &>> /dev/null');
@@ -21,11 +21,11 @@ class MySQL
             $mysql_config = "[client] \nuser = root\npassword = ".$mysql_password;
             ox_exec("echo \"mariadb-server mysql-server/root_password password ".$mysql_password."\""." | debconf-set-selections");
             ox_exec("echo \"mariadb-server mysql-server/root_password_again password ".$mysql_password."\""." | debconf-set-selections");
-            ox_echo_info('Writting MySQL configuration...');
+            ox_echo_info('Writting MySQL stack component configuration...');
             $fs->dumpFile(self::$conf_file, $mysql_config);
-            ox_exec('apt-get -y install mariadb-server');
+            ox_exec('service mysql restart');
         } catch (\Exception $e) {
-            ox_echo_error('Error installing MySQL: '.$e);
+            ox_echo_error('Error installing MySQL stack component: '.$e);
             return false;
         }
         return true;
@@ -35,13 +35,13 @@ class MySQL
     {
         try {
             $fs = new Filesystem();
-            ox_echo_info('Uninstalling MySQL, please wait...');
+            ox_echo_info('Uninstalling MySQL stack component, please wait...');
             ox_exec('apt-get -y purge mariadb-server');
             ox_exec('apt-get -y --purge autoremove');
             ox_echo_info('Remove MySQL configuration...');
             $fs->remove(self::$conf_path);
         } catch (\Exception $e) {
-            ox_echo_error('Error uninstalling MySQL: '.$e);
+            ox_echo_error('Error uninstalling MySQL stack component: '.$e);
             return false;
         }
         return true;

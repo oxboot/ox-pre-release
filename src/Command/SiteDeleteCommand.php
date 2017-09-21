@@ -32,14 +32,14 @@ class SiteDeleteCommand extends BaseCommand
         $helper = $this->getHelper('question');
         $question = new ConfirmationQuestion('Delete site '.$site_name.': Are you sure(y/N)?', false);
 
+        ox_echo_info('Try to delete site '.$site_name);
+
         if (!$fs->exists($site_file)) {
             ox_echo_error('Site '.$site_name.' config not exists');
-            return false;
-        }
-
-        if (!$fs->exists($site_dir)) {
-            ox_echo_error('Site '.$site_name.' folder not exists');
-            return false;
+            if (!$fs->exists($site_dir)) {
+                ox_echo_error('Site '.$site_name.' folder not exists');
+                return false;
+            }
         }
 
         if (!$helper->ask($input, $output, $question)) {
@@ -47,23 +47,23 @@ class SiteDeleteCommand extends BaseCommand
             return false;
         }
 
-        ox_echo_info('Try to delete site '.$site_name);
-
         $fs->remove([
             $site_dir,
             $config->get('nginx.sites-available').DS.$site_name,
             $config->get('nginx.sites-enabled').DS.$site_name
         ]);
 
-        $site_config = Yaml::parse(file_get_contents($site_file));
-        try {
-            MySQL::deleteUser($site_config['db_user']);
-            MySQL::deleteDb($site_config['db_name']);
-        } catch (\Exception $e) {
-            ox_echo_error('Error deleting site '.$site_name.' user & database: ' . $e);
-            return false;
+        if (file_exists($site_file)) {
+            $site_config = Yaml::parse(file_get_contents($site_file));
+            try {
+                MySQL::deleteUser($site_config['db_user']);
+                MySQL::deleteDb($site_config['db_name']);
+            } catch (\Exception $e) {
+                ox_echo_error('Error deleting site '.$site_name.' user & database: ' . $e);
+                return false;
+            }
+            $fs->remove($site_file);
         }
-        $fs->remove($site_file);
         ox_exec('service nginx restart');
         ox_echo_success('Site '.$site_name.' deleted successful');
         return true;

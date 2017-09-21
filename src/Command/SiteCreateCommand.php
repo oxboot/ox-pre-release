@@ -2,6 +2,7 @@
 namespace Ox\Command;
 
 use Ox\Utils;
+use Ox\Stack\PHP;
 use Ox\Stack\MySQL;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -20,6 +21,7 @@ class SiteCreateCommand extends BaseCommand
             ->setHelp('This command allows you to create a new site')
             ->addArgument('site_name', InputArgument::REQUIRED, 'Name of the site')
             ->addOption('mysql', null, InputOption::VALUE_NONE, 'MySQL support')
+            ->addOption('package', null, InputOption::VALUE_OPTIONAL, 'Packages install')
         ;
     }
 
@@ -31,7 +33,9 @@ class SiteCreateCommand extends BaseCommand
         $site_dir = '/var/www/'.$site_name;
         $site_webdir = $site_dir.DS.$config->get('main.public');
         $mysql_support = $input->getOption('mysql');
+        $package = $input->getOption('package');
         $stack_file = OX_DB_FOLDER.'stack.yml';
+        $stack = [];
         $site_file = OX_DB_FOLDER.'/sites/'.$site_name.'.yml';
 
         if (file_exists($stack_file)) {
@@ -49,6 +53,7 @@ class SiteCreateCommand extends BaseCommand
                 return false;
             }
         }
+
         ox_echo_info('Try to create site '.$site_name);
 
         if ($fs->exists($site_file)) {
@@ -62,9 +67,8 @@ class SiteCreateCommand extends BaseCommand
         }
 
         ox_mkdir($site_webdir);
-        $fs->dumpFile($config->get('nginx.sites-available').DS.$site_name, ox_template('nginx/site', ['site_name' => $input->getArgument('site_name')]));
+        $fs->dumpFile($config->get('nginx.sites-available').DS.$site_name, ox_template('stack/nginx/site', ['site_name' => $input->getArgument('site_name')]));
         $fs->symlink($config->get('nginx.sites-available').DS.$site_name, $config->get('nginx.sites-enabled').DS.$site_name);
-        $fs->dumpFile($site_webdir.'/index.php', ox_template('php/default', ['site_name' => $site_name]));
         if (!ox_exec('nginx -t') || !$fs->exists([$site_dir, '/etc/nginx/sites-available/' . $site_name, '/etc/nginx/sites-enabled/' . $site_name])) {
             $fs->remove([$site_dir, $config->get('nginx.sites-available').DS.$site_name, $config->get('nginx.sites-enabled').DS.$site_name]);
             ox_echo_error('Site '.$site_name.' not created, error occurred');
@@ -72,6 +76,16 @@ class SiteCreateCommand extends BaseCommand
         }
         ox_chown($site_dir, 'www-data', 'www-data');
         ox_exec('service nginx restart');
+
+        if (!$stack['php']) {
+            $stack['php'] = PHP::install();
+            try {
+                $fs->dumpFile($stack_file, Yaml::dump($stack));
+            } catch (ParseException $e) {
+                ox_echo_error('Unable to write Ox stack config: '.$e);
+                return false;
+            }
+        }
         if ($mysql_support) {
             if (!$stack['mysql']) {
                 $stack['mysql'] = MySQL::install();
@@ -98,6 +112,12 @@ class SiteCreateCommand extends BaseCommand
             }
         }
         ox_echo_success('Site '.$site_name.' created successful');
+
+        if ($package) {
+            if (file_exists(OX_ROOT . '/packages/').$package.'.yml') {
+                ox_echo('Package '.$package.' exists');
+            }
+        }
         return true;
     }
 }
