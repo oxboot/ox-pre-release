@@ -1,12 +1,14 @@
 #!/usr/bin/env php
 <?php
-define('OX_DIR', __DIR__);
+define('DS', '/');
+define('OX_ROOT', str_replace(DIRECTORY_SEPARATOR, DS, __DIR__));
+define('OX_VERSION', '0.0.0');
+define('OX_CONFIG_FOLDER', '/etc/ox/');
+define('OX_DB_FOLDER', '/var/lib/ox/');
 
-require OX_DIR . '/vendor/autoload.php';
+require OX_ROOT . '/vendor/autoload.php';
 
-$application = new \Symfony\Component\Console\Application();
+$app = new \Ox\App();
+$console = new \Ox\ConsoleApp($app);
 
-$application->add(new Ox\Command\SiteCreateCommand());
-$application->add(new Ox\Command\SiteDeleteCommand());
-
-$application->run();
+$console->run();

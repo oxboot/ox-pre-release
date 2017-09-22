@@ -3,23 +3,36 @@
 - Ubuntu 16.04
 ## Install
 ```bash
-wget -qO ox oxboot.com/ox && sudo bash ox
+wget ox.oxboot.com/ox && sudo bash ox
 ```
 ## Commands
+### Create PHP website
 ```bash
 ox site:create domain.dev
+```
+### Create PHP+MySQL website
+```bash
 ox site:create domain.dev --mysql
-ox site:create domain.dev --package=wp
+```
+### Create website with preconfigured packages
+```bash
+ox site:create domain.dev --package=default
+ox site:create domain.dev --package=wordpress
 ox site:create domain.dev --package=oxboot
 ox site:create domain.dev --package=bedrock
 ox site:create domain.dev --package=grav
 ```
+
+=======
+### Delete Website with Database & all configs
 ```bash
 ox site:delete domain.dev
 ```
+### Print information about website
 ```bash
 ox site:info domain.dev
 ```
+### List all available websites
 ```bash
 ox site:list
 ```
