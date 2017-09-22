@@ -1,1 +1,2 @@
-command: echo '<?php phpinfo();' > {{site_webdir}}/index.php
+commands:
+    - echo '<?php phpinfo();' > {{site_webdir}}/index.php
