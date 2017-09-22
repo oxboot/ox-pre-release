@@ -44,6 +44,11 @@ function ox_install()
   apt-get -y install nginx || ox_lib_error "Unable to install NGINX, exit status " 1
   service nginx restart &>> /dev/null
 
+  ox_lib_echo "Install OX, please wait..."
+  wget -q ox.oxboot.com/ox.phar
+  mv ox.phar /usr/local/bin/ox
+  chmod +x /usr/local/bin/ox
+
   ox_lib_echo "Create Ox database folder, please wait..."
   if [ ! -d /var/lib/ox/ ]; then
     mkdir -p /var/lib/ox/
