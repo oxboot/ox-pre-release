@@ -1,10 +1,10 @@
 <?php
 namespace Ox\Command;
 
-use Ox\Stack\WPCLI;
 use Ox\Utils;
 use Ox\Stack\PHP;
 use Ox\Stack\MySQL;
+use Ox\Stack\WPCLI;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
