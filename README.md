@@ -2,7 +2,7 @@
 [![Travis Build Status](https://travis-ci.org/oxboot/ox.svg)](https://travis-ci.org/EasyEngine/easyengine) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2VATG7M5GNZ6Q)
 
 **Ox currently supports:**
-- Ubuntu 16.04
+- Ubuntu 14.04 & 16.04
 ## Install
 ```bash
 wget ox.oxboot.com/ox && sudo bash ox
