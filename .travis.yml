@@ -6,4 +6,4 @@ php:
 before_install:
 before_script:
 script:
-  - sudo bash ./install.sh
+  - sudo ./install.sh
