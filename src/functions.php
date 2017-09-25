@@ -51,7 +51,7 @@ function ox_mkdir($dir)
     try {
         $fs->mkdir($dir, 0755);
     } catch (IOExceptionInterface $e) {
-        echo $e;
+        ox_echo_error($e->getMessage());
         return false;
     }
     return true;
@@ -64,7 +64,7 @@ function ox_chown($dir, $owner, $group)
         $fs->chown($dir, $owner, true);
         $fs->chgrp($dir, $group, true);
     } catch (IOExceptionInterface $e) {
-        echo $e;
+        ox_echo_error($e->getMessage());
         return false;
     }
     return true;

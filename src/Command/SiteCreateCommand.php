@@ -1,10 +1,10 @@
 <?php
 namespace Ox\Command;
 
-use Ox\Stack\WPCLI;
 use Ox\Utils;
 use Ox\Stack\PHP;
 use Ox\Stack\MySQL;
+use Ox\Stack\WPCLI;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -37,6 +37,7 @@ class SiteCreateCommand extends BaseCommand
         $package = $input->getOption('package');
         $stack = [];
         $stack_file = OX_DB_FOLDER.'stack.yml';
+        $site = [];
         $site_file = OX_DB_FOLDER.'/sites/'.$site_name.'.yml';
 
         if (file_exists($stack_file)) {
@@ -91,11 +92,13 @@ class SiteCreateCommand extends BaseCommand
             if (file_exists(OX_ROOT . '/packages/').$package.'.yml') {
                 ox_echo('Package '.$package.' exists');
                 $package_config = Yaml::parse(file_get_contents(OX_ROOT . '/packages/'.$package.'.yml'));
-                if (in_array('mysql', $package_config['dependencies'])) {
-                    $mysql_support = true;
-                }
-                if (in_array('wp-cli', $package_config['dependencies'])) {
-                    WPCLI::install();
+                if (isset($package_config['dependencies'])) {
+                    if (in_array('mysql', $package_config['dependencies'])) {
+                        $mysql_support = true;
+                    }
+                    if (in_array('wp-cli', $package_config['dependencies'])) {
+                        WPCLI::install();
+                    }
                 }
             }
         }
@@ -133,9 +136,9 @@ class SiteCreateCommand extends BaseCommand
                     foreach ($package_config['commands'] as $command) {
                         ox_exec(ox_mustache($command, [
                             'site_webdir' => $site_webdir,
-                            'db_name' => $site['db_name'],
-                            'db_user' => $site['db_user'],
-                            'db_pass' => $site['db_pass'],
+                            'db_name' => isset($site['db_name']) ? $site['db_name'] : '',
+                            'db_user' => isset($site['db_user']) ? $site['db_user'] : '',
+                            'db_pass' => isset($site['db_pass']) ? $site['db_pass'] : '',
                             'title' => $site_name,
                             'url' => 'http://'.$site_name,
                             'admin_user' => 'admin',
