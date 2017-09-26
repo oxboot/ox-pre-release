@@ -79,7 +79,7 @@ class SiteCreateCommand extends BaseCommand
         ox_chown($site_dir, 'www-data', 'www-data');
         ox_exec('service nginx restart');
 
-        if (!$stack['php']) {
+        if (!isset($stack['php'])) {
             $stack['php'] = PHP::install();
             try {
                 $filesystem->dumpFile($stack_file, Yaml::dump($stack));
