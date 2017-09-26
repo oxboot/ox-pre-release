@@ -10,4 +10,4 @@ before_install:
 before_script:
 script:
     - sudo ./ox.php site:create site.dev
-    - sudo ./ox.php site:delete site.dev
+    - sudo ./ox.php site:delete site.dev --no-prompt

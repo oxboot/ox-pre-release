@@ -28,7 +28,7 @@ class SiteCreateCommand extends BaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $fs = $this->app['filesystem'];
+        $filesystem = $this->app['filesystem'];
         $config = $this->app['config'];
         $site_name = $input->getArgument('site_name');
         $site_dir = '/var/www/'.$site_name;
@@ -49,7 +49,7 @@ class SiteCreateCommand extends BaseCommand
             }
         } else {
             try {
-                $fs->dumpFile($stack_file, '');
+                $filesystem->dumpFile($stack_file, '');
             } catch (ParseException $e) {
                 ox_echo_error('Unable to create Ox stack config: ' . $e);
                 return false;
@@ -58,21 +58,21 @@ class SiteCreateCommand extends BaseCommand
 
         ox_echo_info('Try to create site '.$site_name);
 
-        if ($fs->exists($site_file)) {
+        if ($filesystem->exists($site_file)) {
             ox_echo_error('Site '.$site_name.' config already exists');
             return false;
         }
 
-        if ($fs->exists($site_dir)) {
+        if ($filesystem->exists($site_dir)) {
             ox_echo_error('Site '.$site_name.' folder already exists');
             return false;
         }
 
         ox_mkdir($site_webdir);
-        $fs->dumpFile($config->get('nginx.sites-available').DS.$site_name, ox_template('stack/nginx/site', ['site_name' => $input->getArgument('site_name')]));
-        $fs->symlink($config->get('nginx.sites-available').DS.$site_name, $config->get('nginx.sites-enabled').DS.$site_name);
-        if (!ox_exec('nginx -t') || !$fs->exists([$site_dir, '/etc/nginx/sites-available/' . $site_name, '/etc/nginx/sites-enabled/' . $site_name])) {
-            $fs->remove([$site_dir, $config->get('nginx.sites-available').DS.$site_name, $config->get('nginx.sites-enabled').DS.$site_name]);
+        $filesystem->dumpFile($config->get('nginx.sites-available').DS.$site_name, ox_template('stack/nginx/site', ['site_name' => $input->getArgument('site_name')]));
+        $filesystem->symlink($config->get('nginx.sites-available').DS.$site_name, $config->get('nginx.sites-enabled').DS.$site_name);
+        if (!ox_exec('nginx -t') || !$filesystem->exists([$site_dir, '/etc/nginx/sites-available/' . $site_name, '/etc/nginx/sites-enabled/' . $site_name])) {
+            $filesystem->remove([$site_dir, $config->get('nginx.sites-available').DS.$site_name, $config->get('nginx.sites-enabled').DS.$site_name]);
             ox_echo_error('Site '.$site_name.' not created, error occurred');
             return false;
         }
@@ -82,7 +82,7 @@ class SiteCreateCommand extends BaseCommand
         if (!$stack['php']) {
             $stack['php'] = PHP::install();
             try {
-                $fs->dumpFile($stack_file, Yaml::dump($stack));
+                $filesystem->dumpFile($stack_file, Yaml::dump($stack));
             } catch (ParseException $e) {
                 ox_echo_error('Unable to write Ox stack config: '.$e);
                 return false;
@@ -106,7 +106,7 @@ class SiteCreateCommand extends BaseCommand
             if (!isset($stack['mysql'])) {
                 $stack['mysql'] = MySQL::install();
                 try {
-                    $fs->dumpFile($stack_file, Yaml::dump($stack));
+                    $filesystem->dumpFile($stack_file, Yaml::dump($stack));
                 } catch (ParseException $e) {
                     ox_echo_error('Unable to write Ox stack config: '.$e);
                     return false;
@@ -122,7 +122,7 @@ class SiteCreateCommand extends BaseCommand
             $site['db_user'] = $mysql_site_user;
             $site['db_pass'] = $mysql_site_password;
             try {
-                $fs->dumpFile($site_file, Yaml::dump($site));
+                $filesystem->dumpFile($site_file, Yaml::dump($site));
             } catch (ParseException $e) {
                 ox_echo_error('Unable to write site '.$site_name.' config: '.$e);
                 return false;

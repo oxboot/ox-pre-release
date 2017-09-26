@@ -4,9 +4,9 @@ namespace Ox\Command;
 use Ox\Stack\MySQL;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
 
 class SiteDeleteCommand extends BaseCommand
@@ -18,12 +18,13 @@ class SiteDeleteCommand extends BaseCommand
             ->setDescription('Delete an existing site')
             ->setHelp('This command allows you to delete an existing site')
             ->addArgument('site_name', InputArgument::REQUIRED, 'Name of the site')
+            ->addOption('no-prompt', null, InputOption::VALUE_NONE, 'No prompt option')
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $fs = $this->app['filesystem'];
+        $filesystem = $this->app['filesystem'];
         $config = $this->app['config'];
         $site_name = $input->getArgument('site_name');
         $site_file = OX_DB_FOLDER.'/sites/'.$site_name.'.yml';
@@ -34,9 +35,9 @@ class SiteDeleteCommand extends BaseCommand
 
         ox_echo_info('Try to delete site '.$site_name);
 
-        if (!$fs->exists($site_file)) {
+        if (!$filesystem->exists($site_file)) {
             ox_echo_error('Site '.$site_name.' config not exists');
-            if (!$fs->exists($site_dir)) {
+            if (!$filesystem->exists($site_dir)) {
                 ox_echo_error('Site '.$site_name.' folder not exists');
                 return false;
             }
@@ -47,7 +48,7 @@ class SiteDeleteCommand extends BaseCommand
             return false;
         }
 
-        $fs->remove([
+        $filesystem->remove([
             $site_dir,
             $config->get('nginx.sites-available').DS.$site_name,
             $config->get('nginx.sites-enabled').DS.$site_name
@@ -62,7 +63,7 @@ class SiteDeleteCommand extends BaseCommand
                 ox_echo_error('Error deleting site '.$site_name.' user & database: ' . $e);
                 return false;
             }
-            $fs->remove($site_file);
+            $filesystem->remove($site_file);
         }
         ox_exec('service nginx restart');
         ox_echo_success('Site '.$site_name.' deleted successful');
