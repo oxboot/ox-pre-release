@@ -5,5 +5,5 @@ before_install:
 before_script:
 script:
   - sudo ./install.sh
-  - sudo ox.php site:create site.dev
-  - sudo ox.php site:delete site.dev
+  - sudo ./ox.php site:create site.dev
+  - sudo ./ox.php site:delete site.dev
