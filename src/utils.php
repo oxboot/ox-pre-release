@@ -56,7 +56,7 @@ function ox_distro_version()
 function ox_exec($command, $user = null)
 {
     if (isset($user)) {
-        $command = "su ".$user." -c \"".$command."\"";
+        $command = "su -s /bin/bash -c \"".$command."\" ".$user;
     }
     $process = new Process($command);
     try {
