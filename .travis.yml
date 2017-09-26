@@ -2,7 +2,6 @@ dist: trusty
 sudo: required
 language: bash
 before_install:
-    - chmod -R 777 /home/travis
     - sudo ./install.sh
     - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
     - php composer-setup.php
