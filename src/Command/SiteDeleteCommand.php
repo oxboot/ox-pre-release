@@ -31,6 +31,7 @@ class SiteDeleteCommand extends BaseCommand
         $site_dir = '/var/www/'.$site_name;
         $site_webdir = $site_dir.'/htdocs';
         $helper = $this->getHelper('question');
+        $no_prompt = $input->getOption('no-prompt');
         $question = new ConfirmationQuestion('Delete site '.$site_name.': Are you sure(y/N)?', false);
 
         ox_echo_info('Try to delete site '.$site_name);
@@ -43,9 +44,11 @@ class SiteDeleteCommand extends BaseCommand
             }
         }
 
-        if (!$helper->ask($input, $output, $question)) {
-            ox_echo_error('Operation canceled');
-            return false;
+        if (!$no_prompt) {
+            if (!$helper->ask($input, $output, $question)) {
+                ox_echo_error('Operation canceled');
+                return false;
+            }
         }
 
         $filesystem->remove([
