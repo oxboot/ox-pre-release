@@ -32,7 +32,6 @@ class SiteDeleteCommand extends BaseCommand
         $site_webdir = $site_dir.'/htdocs';
         $helper = $this->getHelper('question');
         $no_prompt = $input->getOption('no-prompt');
-        $question = new ConfirmationQuestion('Delete site '.$site_name.': Are you sure(y/N)?', false);
 
         ox_echo_info('Try to delete site '.$site_name);
 
@@ -45,6 +44,7 @@ class SiteDeleteCommand extends BaseCommand
         }
 
         if (!$no_prompt) {
+            $question = new ConfirmationQuestion('Delete site '.$site_name.': Are you sure(y/N)?', false);
             if (!$helper->ask($input, $output, $question)) {
                 ox_echo_error('Operation canceled');
                 return false;

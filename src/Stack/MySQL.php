@@ -72,7 +72,7 @@ class MySQL
             $mysql_root = parse_ini_file(self::$conf_file);
             $db = self::connect($mysql_root['user'], $mysql_root['password']);
             $db->exec("CREATE USER '".$mysql_site_user."'@'localhost' IDENTIFIED BY '".$mysql_site_password."'");
-            ox_echo_error('User '.$mysql_site_user.' created successful');
+            ox_echo_success('User '.$mysql_site_user.' created successful');
         } catch (\Exception $e) {
             ox_echo_error('Error creating user'.$mysql_site_user.': ' . $e);
             return false;
@@ -86,7 +86,7 @@ class MySQL
             $mysql_root = parse_ini_file(self::$conf_file);
             $db = self::connect($mysql_root['user'], $mysql_root['password']);
             $db->exec("DROP USER '".$mysql_site_user."'@'localhost'");
-            ox_echo_error('User '.$mysql_site_user.' deleted successful');
+            ox_echo_success('User '.$mysql_site_user.' deleted successful');
         } catch (\Exception $e) {
             ox_echo_error('Error deleting user'.$mysql_site_user.': ' . $e);
             return false;
@@ -100,7 +100,7 @@ class MySQL
             $mysql_root = parse_ini_file(self::$conf_file);
             $db = self::connect($mysql_root['user'], $mysql_root['password']);
             $db->exec('CREATE DATABASE '.$mysql_site_db);
-            ox_echo_error('Database '.$mysql_site_db.' created successful');
+            ox_echo_success('Database '.$mysql_site_db.' created successful');
         } catch (\Exception $e) {
             ox_echo_error('Error creating database '.$mysql_site_db.':' . $e);
             return false;
@@ -114,7 +114,7 @@ class MySQL
             $mysql_root = parse_ini_file(self::$conf_file);
             $db = self::connect($mysql_root['user'], $mysql_root['password']);
             $db->exec('DROP DATABASE '.$mysql_site_db);
-            ox_echo_error('Database '.$mysql_site_db.' dropped successful');
+            ox_echo_success('Database '.$mysql_site_db.' dropped successful');
         } catch (\Exception $e) {
             ox_echo_error('Database '.$mysql_site_db.' drop error: ' . $e);
             return false;
@@ -130,7 +130,7 @@ class MySQL
             $db = self::connect($mysql_root['user'], $mysql_root['password']);
             $db->exec('GRANT ALL PRIVILEGES ON '.$mysql_site_db.'.* TO '.$mysql_site_user.'@localhost');
             $db->exec('FLUSH PRIVILEGES');
-            ox_echo_error('Grant privileges of user '.$mysql_site_user.' to database '.$mysql_site_db.' done successful');
+            ox_echo_success('Grant privileges of user '.$mysql_site_user.' to database '.$mysql_site_db.' done successful');
         } catch (\Exception $e) {
             ox_echo_error('Grant privileges of user '.$mysql_site_user.' to database '.$mysql_site_db.' error: ' . $e);
             return false;
