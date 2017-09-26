@@ -24,8 +24,6 @@ ox site:create domain.dev --package=oxboot
 ox site:create domain.dev --package=bedrock
 ox site:create domain.dev --package=grav
 ```
-
-=======
 ### Delete Website with Database & all configs
 ```bash
 ox site:delete domain.dev
