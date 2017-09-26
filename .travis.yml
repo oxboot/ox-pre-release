@@ -2,10 +2,12 @@ dist: trusty
 sudo: required
 language: bash
 before_install:
-  - sudo ./install.sh
-  - composer self-update
-  - composer install
+    - sudo ./install.sh
+    - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+    - php composer-setup.php
+    - php -r "unlink('composer-setup.php');"
+    - sudo php composer.phar install
 before_script:
 script:
-  - sudo ./ox.php site:create site.dev
-  - sudo ./ox.php site:delete site.dev
+    - sudo ./ox.php site:create site.dev
+    - sudo ./ox.php site:delete site.dev
