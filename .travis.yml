@@ -7,7 +7,7 @@ before_install:
     - php composer-setup.php
     - php -r "unlink('composer-setup.php');"
     - sudo mv composer.phar /usr/local/bin/composer
-    - composerinstall
+    - composer install
 before_script:
 script:
     - sudo ./ox.php site:create site.dev
