@@ -2,6 +2,7 @@ dist: trusty
 sudo: required
 language: bash
 before_install:
+    - cat /etc/passwd
     - sudo chsh -s /bin/bash www-data
     - sudo ./install.sh
     - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
@@ -19,4 +20,3 @@ script:
     - sudo ./ox.php site:delete site.dev --no-prompt
     - sudo ./ox.php site:create site.dev --package=wordpress
     - sudo ./ox.php site:delete site.dev --no-prompt
-    - ls /var/www
