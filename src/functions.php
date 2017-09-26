@@ -29,9 +29,9 @@ function ox_echo_error($message)
     ox_echo($message, 'red');
 }
 
-function ox_exec($command, $user = false)
+function ox_exec($command, $user = null)
 {
-    if ($user) {
+    if (isset($user)) {
         $command = "su -p ".$user." -c \"".$command."\"";
     }
     $process = new Process($command);
