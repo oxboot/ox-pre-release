@@ -29,6 +29,30 @@ function ox_echo_error($message)
     ox_echo($message, 'red');
 }
 
+function ox_distro_name()
+{
+    $process = new Process('lsb_release -is');
+    try {
+        $process->run();
+    } catch (ProcessFailedException $e) {
+        ox_echo_error($e->getMessage());
+        return false;
+    }
+    return trim($process->getOutput());
+}
+
+function ox_distro_version()
+{
+    $process = new Process('lsb_release -rs');
+    try {
+        $process->run();
+    } catch (ProcessFailedException $e) {
+        ox_echo_error($e->getMessage());
+        return false;
+    }
+    return trim($process->getOutput());
+}
+
 function ox_exec($command, $user = null)
 {
     if (isset($user)) {
