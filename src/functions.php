@@ -29,15 +29,17 @@ function ox_echo_error($message)
     ox_echo($message, 'red');
 }
 
-function ox_exec($command, $user = false)
+function ox_exec($command, $user = null)
 {
-    if ($user) {
+    if (isset($user)) {
         $command = "su -p ".$user." -c \"".$command."\"";
     }
     $process = new Process($command);
     try {
-        $process->mustRun();
-        ox_echo_info($process->getOutput());
+        $process->setTimeout(3600);
+        $process->mustRun(function ($type, $buffer) {
+            ox_echo_info($buffer);
+        });
     } catch (ProcessFailedException $e) {
         ox_echo_error($e->getMessage());
         return false;
@@ -47,9 +49,9 @@ function ox_exec($command, $user = false)
 
 function ox_mkdir($dir)
 {
-    $fs = new Filesystem();
+    $filesystem = new Filesystem();
     try {
-        $fs->mkdir($dir, 0755);
+        $filesystem->mkdir($dir, 0755);
     } catch (IOExceptionInterface $e) {
         ox_echo_error($e->getMessage());
         return false;
@@ -59,10 +61,10 @@ function ox_mkdir($dir)
 
 function ox_chown($dir, $owner, $group)
 {
-    $fs = new Filesystem();
+    $filesystem = new Filesystem();
     try {
-        $fs->chown($dir, $owner, true);
-        $fs->chgrp($dir, $group, true);
+        $filesystem->chown($dir, $owner, true);
+        $filesystem->chgrp($dir, $group, true);
     } catch (IOExceptionInterface $e) {
         ox_echo_error($e->getMessage());
         return false;
@@ -72,12 +74,12 @@ function ox_chown($dir, $owner, $group)
 
 function ox_mustache($string, $data = null)
 {
-    $m = new Mustache_Engine;
-    return $m->render($string, $data);
+    $mustache = new Mustache_Engine;
+    return $mustache->render($string, $data);
 }
 
 function ox_template($template, $data = null)
 {
-    $m = new Mustache_Engine(['loader' => new Mustache_Loader_FilesystemLoader(OX_ROOT . '/templates')]);
-    return $m->render($template, $data);
+    $mustache = new Mustache_Engine(['loader' => new Mustache_Loader_FilesystemLoader(OX_ROOT . '/templates')]);
+    return $mustache->render($template, $data);
 }
