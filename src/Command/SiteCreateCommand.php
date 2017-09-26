@@ -143,12 +143,11 @@ class SiteCreateCommand extends BaseCommand
                             'url' => 'http://'.$site_name,
                             'admin_user' => 'admin',
                             'admin_email' => 'no-reply@'.$site_name
-                        ]));
+                        ]), 'www-data');
                         if (!$command_output) {
                             return false;
                         }
                     }
-                    ox_chown($site_dir, 'www-data', 'www-data');
                 }
             }
         }
