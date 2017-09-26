@@ -14,8 +14,13 @@ class MySQL
         try {
             $fs = new Filesystem();
             ox_echo_info('Installing MySQL stack component, please wait...');
-            ox_exec('apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8');
-            ox_exec("add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://ams2.mirrors.digitalocean.com/mariadb/repo/10.2/ubuntu xenial main'");
+            if (ox_distro_version() === '14.04') {
+                ox_exec('apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db');
+                ox_exec("add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://ams2.mirrors.digitalocean.com/mariadb/repo/10.2/ubuntu trusty main'");
+            } else {
+                ox_exec('apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8');
+                ox_exec("add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://ams2.mirrors.digitalocean.com/mariadb/repo/10.2/ubuntu xenial main'");
+            }
             ox_exec('apt-get update &>> /dev/null');
             $mysql_password = Utils::randomString(8);
             $mysql_config = "[client] \nuser = root\npassword = ".$mysql_password;
