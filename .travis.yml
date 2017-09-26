@@ -2,6 +2,7 @@ dist: trusty
 sudo: required
 language: bash
 before_install:
+    - sudo chsh -s /bin/bash www-data
     - sudo ./install.sh
     - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
     - php composer-setup.php
