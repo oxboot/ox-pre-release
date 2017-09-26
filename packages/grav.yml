@@ -1,2 +1,4 @@
+dependencies:
+    - composer
 commands:
     - composer create-project getgrav/grav {{site_webdir}}
