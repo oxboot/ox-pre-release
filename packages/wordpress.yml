@@ -4,4 +4,4 @@ dependencies:
 commands:
     - wp core download --path='{{site_webdir}}'
     - wp config create --dbname='{{db_name}}' --dbuser='{{db_user}}' --dbpass='{{db_pass}}' --path='{{site_webdir}}'
-    - wp core install --title='{{title}}' --url='{{url}}' --admin_user='{{admin_user}}' --admin_email='{{admin_email}}' --path='{{site_webdir}}'
+    - wp core install --title='{{site_title}}' --url='{{site_url}}' --admin_user='{{admin_user}}' --admin_email='{{admin_email}}' --path='{{site_webdir}}'

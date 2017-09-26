@@ -1,7 +1,6 @@
 <?php
 namespace Ox\Command;
 
-use Ox\Utils;
 use Ox\Stack\PHP;
 use Ox\Stack\MySQL;
 use Ox\Stack\WPCLI;
@@ -112,9 +111,9 @@ class SiteCreateCommand extends BaseCommand
                     return false;
                 }
             }
-            $mysql_site_user = str_replace('.', '', $site_name).'_user_'.Utils::randomString(8);
-            $mysql_site_password = Utils::randomString(8);
-            $mysql_site_db = str_replace('.', '', $site_name).'_db_'.Utils::randomString(8);
+            $mysql_site_user = str_replace('.', '', $site_name).'_user_'.ox_random_string(8);
+            $mysql_site_password = ox_random_string(8);
+            $mysql_site_db = str_replace('.', '', $site_name).'_db_'.ox_random_string(8);
             MySQL::createDb($mysql_site_db);
             MySQL::createUser($mysql_site_user, $mysql_site_password);
             MySQL::grantDbUser($mysql_site_db, $mysql_site_user);
@@ -140,8 +139,8 @@ class SiteCreateCommand extends BaseCommand
                             'db_name' => isset($site['db_name']) ? $site['db_name'] : '',
                             'db_user' => isset($site['db_user']) ? $site['db_user'] : '',
                             'db_pass' => isset($site['db_pass']) ? $site['db_pass'] : '',
-                            'title' => $site_name,
-                            'url' => 'http://'.$site_name,
+                            'site_title' => $site_name,
+                            'site_url' => 'http://'.$site_name,
                             'admin_user' => 'admin',
                             'admin_email' => 'no-reply@'.$site_name
                         ]), 'www-data');

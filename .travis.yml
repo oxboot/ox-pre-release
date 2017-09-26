@@ -19,3 +19,4 @@ script:
     - sudo ./ox.php site:delete site.dev --no-prompt
     - sudo ./ox.php site:create site.dev --package=wordpress
     - sudo ./ox.php site:delete site.dev --no-prompt
+    - ls /var/www

@@ -22,7 +22,7 @@
       "Ox\\": "src/"
     },
     "files": [
-      "src/functions.php"
+      "src/utils.php"
     ]
   }
 }

@@ -22,7 +22,7 @@ class MySQL
                 ox_exec("add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://ams2.mirrors.digitalocean.com/mariadb/repo/10.2/ubuntu xenial main'");
             }
             ox_exec('apt-get update &>> /dev/null');
-            $mysql_password = Utils::randomString(8);
+            $mysql_password = ox_random_string(8);
             $mysql_config = "[client] \nuser = root\npassword = ".$mysql_password;
             ox_exec("echo \"mariadb-server mysql-server/root_password password ".$mysql_password."\""." | debconf-set-selections");
             ox_exec("echo \"mariadb-server mysql-server/root_password_again password ".$mysql_password."\""." | debconf-set-selections");
