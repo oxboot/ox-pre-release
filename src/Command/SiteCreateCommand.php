@@ -135,6 +135,7 @@ class SiteCreateCommand extends BaseCommand
                 if (isset($package_config['commands'])) {
                     foreach ($package_config['commands'] as $command) {
                         $command_output = ox_exec(ox_mustache($command, [
+                            'site_dir' => $site_dir,
                             'site_webdir' => $site_webdir,
                             'db_name' => isset($site['db_name']) ? $site['db_name'] : '',
                             'db_user' => isset($site['db_user']) ? $site['db_user'] : '',

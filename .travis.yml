@@ -10,6 +10,7 @@ before_install:
     - composer install
 before_script:
 script:
+    - ls /home/travis
     - sudo ./ox.php site:create site.dev
     - sudo ./ox.php site:delete site.dev --no-prompt
     - sudo ./ox.php site:create site.dev --package=default
