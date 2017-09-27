@@ -21,8 +21,7 @@ class SiteCreateCommand extends BaseCommand
             ->setDescription('Create a new site')
             ->setHelp('This command allows you to create a new site')
             ->addArgument('site_name', InputArgument::REQUIRED, 'Name of the site')
-            ->addOption('mysql', null, InputOption::VALUE_NONE, 'MySQL support')
-            ->addOption('package', null, InputOption::VALUE_OPTIONAL, 'Name of the package to install')
+            ->addOption('package', null, InputOption::VALUE_OPTIONAL, 'Package to install')
         ;
     }
 
@@ -46,7 +45,6 @@ class SiteCreateCommand extends BaseCommand
         $site_name = $input->getArgument('site_name');
         $site_dir = '/var/www/'.$site_name;
         $site_webdir = $site_dir.DS.$config->get('main.public');
-        $mysql_support = $input->getOption('mysql');
         $package = $input->getOption('package');
 
         /**
@@ -116,7 +114,30 @@ class SiteCreateCommand extends BaseCommand
                 $package_config = Yaml::parse(file_get_contents(OX_ROOT . '/packages/'.$package.'.yml'));
                 if (isset($package_config['dependencies'])) {
                     if (in_array('mysql', $package_config['dependencies'])) {
-                        $mysql_support = true;
+                        if (!isset($stack['mysql'])) {
+                            $stack['mysql'] = $mysql_stack->install();
+                            try {
+                                $filesystem->dumpFile($stack_file, Yaml::dump($stack));
+                            } catch (ParseException $e) {
+                                $utils->echoError('Unable to write Ox stack config: '.$e->getMessage());
+                                return false;
+                            }
+                        }
+                        $mysql_site_user = str_replace('.', '', $site_name).'_user_'.$utils->randomString();
+                        $mysql_site_password = $utils->randomString();
+                        $mysql_site_db = str_replace('.', '', $site_name).'_db_'.$utils->randomString();
+                        $mysql_stack->createDb($mysql_site_db);
+                        $mysql_stack->createUser($mysql_site_user, $mysql_site_password);
+                        $mysql_stack->grantDbUser($mysql_site_db, $mysql_site_user);
+                        $site['db_name'] = $mysql_site_db;
+                        $site['db_user'] = $mysql_site_user;
+                        $site['db_pass'] = $mysql_site_password;
+                        try {
+                            $filesystem->dumpFile($site_file, Yaml::dump($site));
+                        } catch (ParseException $e) {
+                            $utils->echoError('Unable to write site '.$site_name.' config: '.$e->getMessage());
+                            return false;
+                        }
                     }
                     if (in_array('composer', $package_config['dependencies'])) {
                         (new Composer)->install();
@@ -125,32 +146,6 @@ class SiteCreateCommand extends BaseCommand
                         (new WpCLI)->install();
                     }
                 }
-            }
-        }
-        if ($mysql_support) {
-            if (!isset($stack['mysql'])) {
-                $stack['mysql'] = $mysql_stack->install();
-                try {
-                    $filesystem->dumpFile($stack_file, Yaml::dump($stack));
-                } catch (ParseException $e) {
-                    $utils->echoError('Unable to write Ox stack config: '.$e->getMessage());
-                    return false;
-                }
-            }
-            $mysql_site_user = str_replace('.', '', $site_name).'_user_'.$utils->randomString();
-            $mysql_site_password = $utils->randomString();
-            $mysql_site_db = str_replace('.', '', $site_name).'_db_'.$utils->randomString();
-            $mysql_stack->createDb($mysql_site_db);
-            $mysql_stack->createUser($mysql_site_user, $mysql_site_password);
-            $mysql_stack->grantDbUser($mysql_site_db, $mysql_site_user);
-            $site['db_name'] = $mysql_site_db;
-            $site['db_user'] = $mysql_site_user;
-            $site['db_pass'] = $mysql_site_password;
-            try {
-                $filesystem->dumpFile($site_file, Yaml::dump($site));
-            } catch (ParseException $e) {
-                $utils->echoError('Unable to write site '.$site_name.' config: '.$e->getMessage());
-                return false;
             }
         }
 

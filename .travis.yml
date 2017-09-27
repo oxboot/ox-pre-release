@@ -18,6 +18,8 @@ script:
     - sudo ./ox.php site:delete site.dev --no-prompt
     - sudo ./ox.php site:create site.dev --package=default
     - sudo ./ox.php site:delete site.dev --no-prompt
+    - sudo ./ox.php site:create site.dev --package=mysql
+    - sudo ./ox.php site:delete site.dev --no-prompt
     - sudo ./ox.php site:create site.dev --package=grav
     - sudo ./ox.php site:delete site.dev --no-prompt
     - sudo ./ox.php site:create site.dev --package=wordpress
