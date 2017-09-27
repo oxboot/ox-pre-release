@@ -1,8 +1,10 @@
 dist: trusty
 sudo: required
 language: bash
+addons:
+    hosts:
+        - site.dev
 before_install:
-    - chmod -R 777 /home/travis
     - sudo ./install.sh
     - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
     - php composer-setup.php
@@ -10,6 +12,7 @@ before_install:
     - sudo mv composer.phar /usr/local/bin/composer
     - composer install
 before_script:
+    - chmod -R 777 $HOME
 script:
     - sudo ./ox.php site:create site.dev
     - sudo ./ox.php site:delete site.dev --no-prompt
