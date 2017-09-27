@@ -13,7 +13,7 @@ class WpCLI
 
         try {
             $utils->echoInfo('Installing WP CLI stack component, please wait...');
-            $utils->exec("curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar");
+            $utils->exec("curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar");
             $utils->exec("chmod +x wp-cli.phar");
             $utils->exec("mv wp-cli.phar /usr/local/bin/wp");
         } catch (\Exception $e) {
