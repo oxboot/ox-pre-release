@@ -1,7 +1,7 @@
 <?php
 namespace Ox;
 
-class DB
+class AppDb
 {
 
 }

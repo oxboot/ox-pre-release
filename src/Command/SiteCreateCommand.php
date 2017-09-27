@@ -68,10 +68,19 @@ class SiteCreateCommand extends BaseCommand
         }
 
         ox_mkdir($site_webdir);
-        $filesystem->dumpFile($config->get('nginx.sites-available').DS.$site_name, ox_template('stack/nginx/site', ['site_name' => $input->getArgument('site_name')]));
-        $filesystem->symlink($config->get('nginx.sites-available').DS.$site_name, $config->get('nginx.sites-enabled').DS.$site_name);
-        if (!ox_exec('nginx -t') || !$filesystem->exists([$site_dir, '/etc/nginx/sites-available/' . $site_name, '/etc/nginx/sites-enabled/' . $site_name])) {
-            $filesystem->remove([$site_dir, $config->get('nginx.sites-available').DS.$site_name, $config->get('nginx.sites-enabled').DS.$site_name]);
+        $filesystem->dumpFile(
+            $config->get('nginx.sites-available').DS.$site_name,
+            ox_template('stack/nginx/site', ['site_name' => $input->getArgument('site_name')])
+        );
+        $filesystem->symlink(
+            $config->get('nginx.sites-available').DS.$site_name,
+            $config->get('nginx.sites-enabled').DS.$site_name
+        );
+        if (!ox_exec('nginx -t') || !$filesystem->exists([$site_dir, '/etc/nginx/sites-available/'.$site_name, '/etc/nginx/sites-enabled/'.$site_name])) {
+            $filesystem->remove([
+                $site_dir, $config->get('nginx.sites-available').DS.$site_name,
+                $config->get('nginx.sites-enabled').DS.$site_name
+            ]);
             ox_echo_error('Site '.$site_name.' not created, error occurred');
             return false;
         }
@@ -89,7 +98,7 @@ class SiteCreateCommand extends BaseCommand
         }
         if ($package) {
             if (file_exists(OX_ROOT . '/packages/').$package.'.yml') {
-                ox_echo('Package '.$package.' exists');
+                ox_echo_info('Try to install package: '.$package);
                 $package_config = Yaml::parse(file_get_contents(OX_ROOT . '/packages/'.$package.'.yml'));
                 if (isset($package_config['dependencies'])) {
                     if (in_array('mysql', $package_config['dependencies'])) {
