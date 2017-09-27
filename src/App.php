@@ -1,6 +1,7 @@
 <?php
 namespace Ox;
 
+use Ox\App\Utils;
 use Pimple\Container;
 use Symfony\Component\Filesystem\Filesystem;
 use Noodlehaus\Config;
@@ -17,14 +18,14 @@ class App extends Container
             return new Filesystem();
         });
 
+        $app['utils'] = $app->factory(function ($c) {
+            return new Utils();
+        });
+
         try {
-            $config_file = OX_CONFIG_FOLDER . 'ox.ini';
-            if (!$app['filesystem']->exists($config_file)) {
-                $app['filesystem']->dumpFile($config_file, ox_template('config/ox'));
-            }
-            $app['config'] = Config::load(OX_CONFIG_FOLDER . 'ox.ini');
+            $app['config'] = new Config(OX_CONFIG_FOLDER . 'ox.ini');
         } catch (Exception $e) {
-            ox_echo_error('Error loading Ox config: ' . $e);
+            die('Error loading Ox config: ' . $e->getMessage());
         }
     }
 }

@@ -1,138 +1,179 @@
 <?php
 namespace Ox\Stack;
 
-use Ox\Utils;
+use Ox\App\Utils;
 use Symfony\Component\Filesystem\Filesystem;
 
-class MySQL
+class MYSQL
 {
-    private static $conf_path = '/etc/mysql';
-    private static $conf_file = '/etc/mysql/conf.d/my.cnf';
+    const MYSQL_CONFIG_PATH = '/etc/mysql';
+    const MYSQL_CONFIG_FILE = '/etc/mysql/conf.d/my.cnf';
 
-    public static function install()
+    public function install()
     {
+        $utils = new Utils();
+        $filesystem = new Filesystem();
+
         try {
-            $fs = new Filesystem();
-            ox_echo_info('Installing MySQL stack component, please wait...');
-            if (ox_distro_version() === '14.04') {
-                ox_exec('apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db');
-                ox_exec("add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://ams2.mirrors.digitalocean.com/mariadb/repo/10.2/ubuntu trusty main'");
-            } else {
-                ox_exec('apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8');
-                ox_exec("add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://ams2.mirrors.digitalocean.com/mariadb/repo/10.2/ubuntu xenial main'");
+            $utils->echoInfo('Installing MySQL stack component, please wait...');
+            $distro_name = $utils->distroName();
+            $distro_version = $utils->distroVersion();
+            if ($distro_name !== 'Ubuntu') {
+                $utils->echoError('Ox do not support this distro: '.$distro_name);
+                return false;
             }
-            ox_exec('apt-get update &>> /dev/null');
-            $mysql_password = ox_random_string(8);
+            if ($distro_version === '14.04') {
+                $utils->exec('apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xCBCB082A1BB943DB');
+                $distro_codename = 'trusty';
+            } elseif ($distro_version === '16.04') {
+                $utils->exec('apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8');
+                $distro_codename = 'xenial';
+            } else {
+                $utils->echoError('Ox do not support this Ubuntu version: '.$distro_version);
+                return false;
+            }
+            $utils->exec(
+                "add-apt-repository 'deb [arch=amd64,i386,ppc64el] "
+                ."http://ams2.mirrors.digitalocean.com/mariadb/repo/10.2/ubuntu ".$distro_codename." main'"
+            );
+            $utils->exec('apt-get update &>> /dev/null');
+            $mysql_password = $utils->randomString();
             $mysql_config = "[client] \nuser = root\npassword = ".$mysql_password;
-            ox_exec("echo \"mariadb-server mysql-server/root_password password ".$mysql_password."\""." | debconf-set-selections");
-            ox_exec("echo \"mariadb-server mysql-server/root_password_again password ".$mysql_password."\""." | debconf-set-selections");
-            ox_echo_info('Writting MySQL stack component configuration...');
-            $fs->dumpFile(self::$conf_file, $mysql_config);
-            ox_echo_info('Installing MySQL server...');
-            ox_exec('apt-get install -y mariadb-server');
-            ox_exec('service mysql restart');
+            $utils->exec(
+                "echo \"mariadb-server mysql-server/root_password password "
+                .$mysql_password."\""." | debconf-set-selections"
+            );
+            $utils->exec(
+                "echo \"mariadb-server mysql-server/root_password_again password "
+                .$mysql_password."\""." | debconf-set-selections"
+            );
+            $utils->echoInfo('Writting MySQL stack component configuration...');
+            $filesystem->dumpFile(self::MYSQL_CONFIG_FILE, $mysql_config);
+            $utils->echoInfo('Installing MySQL server...');
+            $utils->exec('apt-get install -y mariadb-server');
+            $utils->exec('service mysql restart');
         } catch (\Exception $e) {
-            ox_echo_error('Error installing MySQL stack component: '.$e);
+            $utils->echoError('Error installing MySQL stack component: '.$e);
             return false;
         }
         return true;
     }
 
-    public static function uninstall()
+    public function uninstall()
     {
+        $utils = new Utils();
+        $filesystem = new Filesystem();
+
         try {
-            $fs = new Filesystem();
-            ox_echo_info('Uninstalling MySQL stack component, please wait...');
-            ox_exec('apt-get -y purge mariadb-server');
-            ox_exec('apt-get -y --purge autoremove');
-            ox_echo_info('Remove MySQL configuration...');
-            $fs->remove(self::$conf_path);
+            $utils->echoInfo('Uninstalling MySQL stack component, please wait...');
+            $utils->exec('apt-get -y purge mariadb-server');
+            $utils->exec('apt-get -y --purge autoremove');
+            $utils->echoInfo('Remove MySQL configuration...');
+            $filesystem->remove(self::MYSQL_CONFIG_FILE);
         } catch (\Exception $e) {
-            ox_echo_error('Error uninstalling MySQL stack component: '.$e);
+            $utils->echoError('Error uninstalling MySQL stack component: '.$e);
             return false;
         }
         return true;
     }
 
-    public static function connect($mysql_user, $mysql_password)
+    public function connect($mysql_user, $mysql_password)
     {
+        $utils = new Utils();
+
         try {
             $db = new \PDO('mysql:host=localhost;', $mysql_user, $mysql_password);
             $db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         } catch (\PDOException $e) {
-            ox_echo_error('Connect to MySQL not established: '.$e);
+            $utils->echoError('Connect to MySQL not established: '.$e);
             return false;
         }
         return $db;
     }
 
-    public static function createUser($mysql_site_user, $mysql_site_password)
+    public function createUser($mysql_site_user, $mysql_site_password)
     {
+        $utils = new Utils();
+
         try {
-            $mysql_root = parse_ini_file(self::$conf_file);
-            $db = self::connect($mysql_root['user'], $mysql_root['password']);
+            $mysql_root = parse_ini_file(self::MYSQL_CONFIG_FILE);
+            $db = $this->connect($mysql_root['user'], $mysql_root['password']);
             $db->exec("CREATE USER '".$mysql_site_user."'@'localhost' IDENTIFIED BY '".$mysql_site_password."'");
-            ox_echo_success('User '.$mysql_site_user.' created successful');
+            $utils->echoSuccess('User '.$mysql_site_user.' created successful');
         } catch (\Exception $e) {
-            ox_echo_error('Error creating user'.$mysql_site_user.': ' . $e);
+            $utils->echoError('Error creating user'.$mysql_site_user.': ' . $e);
             return false;
         }
         return true;
     }
 
-    public static function deleteUser($mysql_site_user)
+    public function deleteUser($mysql_site_user)
     {
+        $utils = new Utils();
+
         try {
-            $mysql_root = parse_ini_file(self::$conf_file);
-            $db = self::connect($mysql_root['user'], $mysql_root['password']);
+            $mysql_root = parse_ini_file(self::MYSQL_CONFIG_FILE);
+            $db = $this->connect($mysql_root['user'], $mysql_root['password']);
             $db->exec("DROP USER '".$mysql_site_user."'@'localhost'");
-            ox_echo_success('User '.$mysql_site_user.' deleted successful');
+            $utils->echoSuccess('User '.$mysql_site_user.' deleted successful');
         } catch (\Exception $e) {
-            ox_echo_error('Error deleting user'.$mysql_site_user.': ' . $e);
+            $utils->echoError('Error deleting user'.$mysql_site_user.': ' . $e);
             return false;
         }
         return true;
     }
 
-    public static function createDb($mysql_site_db)
+    public function createDb($mysql_site_db)
     {
+        $utils = new Utils();
+
         try {
-            $mysql_root = parse_ini_file(self::$conf_file);
+            $mysql_root = parse_ini_file(self::MYSQL_CONFIG_FILE);
             $db = self::connect($mysql_root['user'], $mysql_root['password']);
             $db->exec('CREATE DATABASE '.$mysql_site_db);
-            ox_echo_success('Database '.$mysql_site_db.' created successful');
+            $utils->echoInfo('Database '.$mysql_site_db.' created successful');
         } catch (\Exception $e) {
-            ox_echo_error('Error creating database '.$mysql_site_db.':' . $e);
+            $utils->echoError('Error creating database '.$mysql_site_db.':' . $e);
             return false;
         }
         return true;
     }
 
-    public static function deleteDb($mysql_site_db)
+    public function deleteDb($mysql_site_db)
     {
+        $utils = new Utils();
+
         try {
-            $mysql_root = parse_ini_file(self::$conf_file);
+            $mysql_root = parse_ini_file(self::MYSQL_CONFIG_FILE);
             $db = self::connect($mysql_root['user'], $mysql_root['password']);
             $db->exec('DROP DATABASE '.$mysql_site_db);
-            ox_echo_success('Database '.$mysql_site_db.' dropped successful');
+            $utils->echoSuccess('Database '.$mysql_site_db.' dropped successful');
         } catch (\Exception $e) {
-            ox_echo_error('Database '.$mysql_site_db.' drop error: ' . $e);
+            $utils->echoError('Database '.$mysql_site_db.' drop error: ' . $e);
             return false;
         }
         return true;
     }
 
 
-    public static function grantDbUser($mysql_site_db, $mysql_site_user)
+    public function grantDbUser($mysql_site_db, $mysql_site_user)
     {
+        $utils = new Utils();
+
         try {
-            $mysql_root = parse_ini_file(self::$conf_file);
+            $mysql_root = parse_ini_file(self::MYSQL_CONFIG_FILE);
             $db = self::connect($mysql_root['user'], $mysql_root['password']);
             $db->exec('GRANT ALL PRIVILEGES ON '.$mysql_site_db.'.* TO '.$mysql_site_user.'@localhost');
             $db->exec('FLUSH PRIVILEGES');
-            ox_echo_success('Grant privileges of user '.$mysql_site_user.' to database '.$mysql_site_db.' done successful');
+            $utils->echoSuccess(
+                'Grant privileges of user '
+                .$mysql_site_user.' to database '.$mysql_site_db.' done successful'
+            );
         } catch (\Exception $e) {
-            ox_echo_error('Grant privileges of user '.$mysql_site_user.' to database '.$mysql_site_db.' error: ' . $e);
+            $utils->echoError(
+                'Grant privileges of user '
+                .$mysql_site_user.' to database '.$mysql_site_db.' error: ' . $e->getMessage()
+            );
             return false;
         }
         return true;

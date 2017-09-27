@@ -24,21 +24,37 @@ class SiteDeleteCommand extends BaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        /**
+         * @var \Symfony\Component\Filesystem\Filesystem $filesystem
+         * @var \Ox\App\Utils $utils
+         * @var \Noodlehaus\Config $config
+         */
         $filesystem = $this->app['filesystem'];
+        $utils = $this->app['utils'];
         $config = $this->app['config'];
+
+        $mysql_stack = new MySQL();
+
+        /**
+         * Arguments from user input
+         */
         $site_name = $input->getArgument('site_name');
-        $site_file = OX_DB_FOLDER.'/sites/'.$site_name.'.yml';
         $site_dir = '/var/www/'.$site_name;
         $site_webdir = $site_dir.'/htdocs';
         $helper = $this->getHelper('question');
         $no_prompt = $input->getOption('no-prompt');
 
-        ox_echo_info('Try to delete site '.$site_name);
+        /**
+         * Config files
+         */
+        $site_file = OX_DB_FOLDER.'/sites/'.$site_name.'.yml';
+
+        $utils->echoInfo('Try to delete site '.$site_name);
 
         if (!$filesystem->exists($site_file)) {
-            ox_echo_error('Site '.$site_name.' config not exists');
+            $utils->echoError('Site '.$site_name.' config not exists');
             if (!$filesystem->exists($site_dir)) {
-                ox_echo_error('Site '.$site_name.' folder not exists');
+                $utils->echoError('Site '.$site_name.' folder not exists');
                 return false;
             }
         }
@@ -46,7 +62,7 @@ class SiteDeleteCommand extends BaseCommand
         if (!$no_prompt) {
             $question = new ConfirmationQuestion('Delete site '.$site_name.': Are you sure(y/N)?', false);
             if (!$helper->ask($input, $output, $question)) {
-                ox_echo_error('Operation canceled');
+                $utils->echoError('Operation canceled');
                 return false;
             }
         }
@@ -60,16 +76,16 @@ class SiteDeleteCommand extends BaseCommand
         if (file_exists($site_file)) {
             $site_config = Yaml::parse(file_get_contents($site_file));
             try {
-                MySQL::deleteUser($site_config['db_user']);
-                MySQL::deleteDb($site_config['db_name']);
+                $mysql_stack->deleteUser($site_config['db_user']);
+                $mysql_stack->deleteDb($site_config['db_name']);
             } catch (\Exception $e) {
-                ox_echo_error('Error deleting site '.$site_name.' user & database: ' . $e);
+                $utils->echoError('Error deleting site '.$site_name.' user & database: ' . $e->getMessage());
                 return false;
             }
             $filesystem->remove($site_file);
         }
-        ox_exec('service nginx restart');
-        ox_echo_success('Site '.$site_name.' deleted successful');
+        $utils->exec('service nginx restart');
+        $utils->echoSuccess('Site '.$site_name.' deleted successful');
         return true;
     }
 }
