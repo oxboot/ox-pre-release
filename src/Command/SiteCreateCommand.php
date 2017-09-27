@@ -162,8 +162,8 @@ class SiteCreateCommand extends BaseCommand
                             'db_pass' => isset($site['db_pass']) ? $site['db_pass'] : '',
                             'site_title' => $site_name,
                             'site_url' => 'http://'.$site_name,
-                            'admin_user' => 'admin',
-                            'admin_email' => 'no-reply@'.$site_name
+                            'site_admin_user' => 'admin',
+                            'site_admin_email' => 'no-reply@'.$site_name
                         ]), 'www-data');
                         if (!$command_output) {
                             return false;
