@@ -4,7 +4,7 @@ namespace Ox\Command;
 use Ox\Stack\Composer;
 use Ox\Stack\PHP;
 use Ox\Stack\MySQL;
-use Ox\Stack\WPCLI;
+use Ox\Stack\WpCLI;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
