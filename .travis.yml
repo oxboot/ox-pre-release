@@ -14,31 +14,19 @@ before_install:
 before_script:
     - chmod -R 777 $HOME
 script:
-    - sudo ./ox.php stack:install nginx
-    - sudo cat /var/lib/ox/stack.yml
-    - sudo ./ox.php stack:uninstall nginx
-    - sudo cat /var/lib/ox/stack.yml
+    - sudo ./ox.php stack:install composer
+    - sudo ./ox.php stack:uninstall composer
     - sudo ./ox.php stack:install mysql
-    - sudo cat /var/lib/ox/stack.yml
     - sudo ./ox.php stack:uninstall mysql
-    - sudo cat /var/lib/ox/stack.yml
+    - sudo ./ox.php stack:install wpcli
+    - sudo ./ox.php stack:uninstall wpcli
     - sudo ./ox.php site:create site.dev
-    - sudo cat /var/lib/ox/sites/site.dev.yml
     - sudo ./ox.php site:delete site.dev --no-prompt
-    - test -f /var/lib/ox/sites/site.dev.yml
     - sudo ./ox.php site:create site.dev --package=default
-    - sudo cat /var/lib/ox/sites/site.dev.yml
     - sudo ./ox.php site:delete site.dev --no-prompt
-    - test -f /var/lib/ox/sites/site.dev.yml
     - sudo ./ox.php site:create site.dev --package=mysql
-    - sudo cat /var/lib/ox/sites/site.dev.yml
     - sudo ./ox.php site:delete site.dev --no-prompt
-    - test -f /var/lib/ox/sites/site.dev.yml
     - sudo ./ox.php site:create site.dev --package=grav
-    - sudo cat /var/lib/ox/sites/site.dev.yml
     - sudo ./ox.php site:delete site.dev --no-prompt
-    - test -f /var/lib/ox/sites/site.dev.yml
     - sudo ./ox.php site:create site.dev --package=wordpress
-    - sudo cat /var/lib/ox/sites/site.dev.yml
     - sudo ./ox.php site:delete site.dev --no-prompt
-    - test -f /var/lib/ox/sites/site.dev.yml
