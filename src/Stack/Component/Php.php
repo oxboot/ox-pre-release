@@ -11,18 +11,17 @@ class Php extends AbstractComponent
 
     public function install()
     {
-        $utils = new Utils();
-        $filesystem = new Filesystem();
-
         try {
-            $utils->echoInfo('Installing PHP stack component, please wait...');
-            $utils->echoInfo('Writing PHP stack component configuration...');
-            $php_www_config = $utils->templateFile('stack/php/www');
-            $filesystem->copy(self::$php_www_config_file, self::$php_www_old_config_file);
-            $filesystem->dumpFile(self::$php_www_config_file, $php_www_config);
-            $utils->exec('service php7.1-fpm restart');
+            $this->utils->echoInfo('Installing PHP stack component, please wait...');
+            $this->utils->echoInfo('Writing PHP stack component configuration...');
+            $php_www_config = $this->utils->templateFile('stack/php/www');
+            if (!$this->filesystem->exists(self::$php_www_old_config_file)) {
+                $this->filesystem->copy(self::$php_www_config_file, self::$php_www_old_config_file);
+            }
+            $this->filesystem->dumpFile(self::$php_www_config_file, $php_www_config);
+            $this->utils->exec('service php7.1-fpm restart');
         } catch (\Exception $e) {
-            $utils->echoError('Error installing PHP stack component: '.$e->getMessage());
+            $this->utils->echoError('Error installing PHP stack component: '.$e->getMessage());
             return false;
         }
         return true;

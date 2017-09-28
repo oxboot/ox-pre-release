@@ -1,6 +1,7 @@
 <?php
 namespace Ox\Command;
 
+use Ox\App\Db;
 use Ox\Stack\Component\Composer;
 use Ox\Stack\Component\Php;
 use Ox\Stack\Component\Mysql;
@@ -37,8 +38,7 @@ class SiteCreateCommand extends BaseCommand
         $utils = $this->app['utils'];
         $config = $this->app['config'];
 
-        $php_stack = new Php();
-        $mysql_stack = new Mysql();
+        $site_config = new Db('site');
 
         /**
          * Arguments from user input
@@ -51,11 +51,13 @@ class SiteCreateCommand extends BaseCommand
          */
         $site_dir = '/var/www/'.$site_name;
         $site_webdir = $site_dir.DS.$config->get('main.public');
-        $site_file = OX_DB_FOLDER.'/sites/'.$site_name.'.yml';
+        $site_db_name = null;
+        $site_db_user = null;
+        $site_db_pass = null;
 
         $utils->echoInfo('Try to create site '.$site_name);
 
-        if ($filesystem->exists($site_file)) {
+        if ($site_config->exists()) {
             $utils->echoError('Site '.$site_name.' config already exists');
             return false;
         }
@@ -79,13 +81,24 @@ class SiteCreateCommand extends BaseCommand
                         if (!$stack_manager->checkInstall()) {
                             $utils->echoInfo('Stack component: '.$dependence.' not installed');
                             $utils->echoInfo('Try to install stack component: '.$dependence);
-                            if (!$stack_manager->install()) {
+                            $install_result = $stack_manager->install();
+                            if (!$install_result) {
                                 $utils->echoError('Error installing stack component: '.$dependence);
                                 return false;
                             }
                         }
+                        if ($dependence === 'mysql') {
+                            $mysql_stack = new Mysql();
+                            $site_db_name = str_replace('.', '', $site_name).'_db_'.$utils->randomString();
+                            $site_db_user = str_replace('.', '', $site_name).'_user_'.$utils->randomString();
+                            $site_db_pass = $utils->randomString();
+                            $mysql_stack->createDb($site_db_name);
+                            $mysql_stack->createUser($site_db_user, $site_db_pass);
+                            $mysql_stack->grantDbUser($site_db_name, $site_db_user);
+                        }
                     }
                 }
+                $utils->echoSuccess('All dependencies for package: '.$package.' installed successful');
             }
         }
 
@@ -99,7 +112,6 @@ class SiteCreateCommand extends BaseCommand
                 $config->get('nginx.sites-available').DS.$site_name,
                 $config->get('nginx.sites-enabled').DS.$site_name
             );
-
             $utils->chown($site_dir, 'www-data', 'www-data');
             $utils->exec('service nginx restart');
         } catch (ParseException $e) {
@@ -107,72 +119,25 @@ class SiteCreateCommand extends BaseCommand
             return false;
         }
 
-        //if (!isset($stack['php'])) {
-        //    $stack['php'] = $php_stack->install();
-        //    try {
-        //        $filesystem->dumpFile($stack_file, Yaml::dump($stack));
-        //    } catch (ParseException $e) {
-        //        $utils->echoError('Unable to write Ox stack config: '.$e->getMessage());
-        //        return false;
-        //    }
-        //}
-        //if ($package) {
-        //    if (file_exists(OX_ROOT . '/packages/').$package.'.yml') {
-        //        $utils->echoInfo('Try to install package: '.$package);
-        //        $package_config = Yaml::parse(file_get_contents(OX_ROOT . '/packages/'.$package.'.yml'));
-        //        if (isset($package_config['dependencies'])) {
-        //            if (in_array('mysql', $package_config['dependencies'])) {
-        //                if (!isset($stack['mysql'])) {
-        //                    $stack['mysql'] = $mysql_stack->install();
-        //                    try {
-        //                        $filesystem->dumpFile($stack_file, Yaml::dump($stack));
-        //                    } catch (ParseException $e) {
-        //                        $utils->echoError('Unable to write Ox stack config: '.$e->getMessage());
-        //                        return false;
-        //                    }
-        //                }
-        //                $mysql_site_user = str_replace('.', '', $site_name).'_user_'.$utils->randomString();
-        //                $mysql_site_password = $utils->randomString();
-        //                $mysql_site_db = str_replace('.', '', $site_name).'_db_'.$utils->randomString();
-        //                $mysql_stack->createDb($mysql_site_db);
-        //                $mysql_stack->createUser($mysql_site_user, $mysql_site_password);
-        //                $mysql_stack->grantDbUser($mysql_site_db, $mysql_site_user);
-        //                $site['db_name'] = $mysql_site_db;
-        //                $site['db_user'] = $mysql_site_user;
-        //                $site['db_pass'] = $mysql_site_password;
-        //                try {
-        //                    $filesystem->dumpFile($site_file, Yaml::dump($site));
-        //                } catch (ParseException $e) {
-        //                    $utils->echoError('Unable to write site '.$site_name.' config: '.$e->getMessage());
-        //                    return false;
-        //                }
-        //            }
-        //            if (in_array('composer', $package_config['dependencies'])) {
-        //                (new Composer)->install();
-        //            }
-        //            if (in_array('wp-cli', $package_config['dependencies'])) {
-        //                (new WpCLI)->install();
-        //            }
-        //        }
-        //    }
-        //}
+        $database_content = [
+            'site_name' => $site_name,
+            'site_dir' => $site_dir,
+            'site_webdir' => $site_webdir,
+            'site_db_name' => $site_db_name,
+            'site_db_user' => $site_db_user,
+            'site_db_pass' => $site_db_pass,
+            'site_title' => $site_name,
+            'site_url' => 'http://'.$site_name,
+            'site_admin_user' => 'admin',
+            'site_admin_email' => 'no-reply@'.$site_name
+        ];
 
         if ($package) {
             if (file_exists(OX_ROOT . '/packages/').$package.'.yml') {
                 $package_config = Yaml::parse(file_get_contents(OX_ROOT . '/packages/'.$package.'.yml'));
                 if (isset($package_config['commands'])) {
                     foreach ($package_config['commands'] as $command) {
-                        $command_output = $utils->exec($utils->templateString($command, [
-                            'site_dir' => $site_dir,
-                            'site_webdir' => $site_webdir,
-                            'db_name' => isset($site['db_name']) ? $site['db_name'] : '',
-                            'db_user' => isset($site['db_user']) ? $site['db_user'] : '',
-                            'db_pass' => isset($site['db_pass']) ? $site['db_pass'] : '',
-                            'site_title' => $site_name,
-                            'site_url' => 'http://'.$site_name,
-                            'site_admin_user' => 'admin',
-                            'site_admin_email' => 'no-reply@'.$site_name
-                        ]), 'www-data');
+                        $command_output = $utils->exec($utils->templateString($command, $database_content), 'www-data');
                         if (!$command_output) {
                             return false;
                         }
@@ -181,7 +146,8 @@ class SiteCreateCommand extends BaseCommand
             }
         }
 
-        $utils->echoInfo('Site '.$site_name.' created successful');
+        $site_config->write($database_content);
+        $utils->echoSuccess('Site '.$site_name.' created successful');
         return true;
     }
 }
