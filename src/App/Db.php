@@ -67,4 +67,19 @@ class Db
         }
         return true;
     }
+
+    public function remove()
+    {
+        if (!$this->exists()) {
+            $this->utils->echoError('Ox database table '.$this->db_table.' not exists');
+            return false;
+        }
+        try {
+            $this->filesystem->remove($this->db_file);
+        } catch (ParseException $e) {
+            $this->utils->echoError('Unable to remove Ox database table '.$this->db_table.' : '.$e->getMessage());
+            return false;
+        }
+        return true;
+    }
 }

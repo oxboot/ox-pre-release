@@ -1,0 +1,6 @@
+dependencies:
+    - composer
+    - mysql
+    - php
+commands:
+    - composer create-project october/october {{site_webdir}}

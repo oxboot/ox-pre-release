@@ -38,13 +38,16 @@ class SiteCreateCommand extends BaseCommand
         $utils = $this->app['utils'];
         $config = $this->app['config'];
 
-        $site_config = new Db('site');
-
         /**
          * Arguments from user input
          */
         $site_name = $input->getArgument('site_name');
         $package = $input->getOption('package');
+
+        /**
+         * Site config
+         */
+        $site_config = new Db('sites/'.$site_name);
 
         /**
          * Additional variables

@@ -8,11 +8,13 @@
 wget ox.oxboot.com/ox && sudo bash ox
 ```
 ## Commands
-### Create PHP website
+### Site
+Create & delete websites
+#### Create PHP website
 ```bash
 ox site:create domain.dev
 ```
-### Create website with preconfigured packages
+#### Create website with preconfigured packages
 ```bash
 ox site:create domain.dev --package=default
 ox site:create domain.dev --package=mysql
@@ -21,15 +23,29 @@ ox site:create domain.dev --package=oxboot
 ox site:create domain.dev --package=bedrock
 ox site:create domain.dev --package=grav
 ```
-### Print information about website
+#### Print information about website
 ```bash
 ox site:info domain.dev
 ```
-### List all available websites
+#### List all available websites
 ```bash
 ox site:list
 ```
-### Delete website with database & all configs
+#### Delete website with database & all configs
 ```bash
 ox site:delete domain.dev
+```
+### Stack
+Install & uninstall components required to run website
+#### Install stack components
+```bash
+ox stack:install mysql
+ox stack:install composer
+ox stack:install wpcli
+```
+#### Uninstall stack components
+```bash
+ox stack:uninstall mysql
+ox stack:uninstall composer
+ox stack:uninstall wpcli
 ```

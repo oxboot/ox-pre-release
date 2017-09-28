@@ -45,7 +45,7 @@ class StackUninstall extends BaseCommand
         }
 
         if (!$stack_component_class->checkInstall()) {
-            $utils->echoError('Stack component: '.$stack_component.' already installed');
+            $utils->echoError('Stack component: '.$stack_component.' already uninstalled');
             return false;
         }
         $stack_component_class->uninstall();

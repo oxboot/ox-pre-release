@@ -76,8 +76,8 @@ class SiteDeleteCommand extends BaseCommand
         if (file_exists($site_file)) {
             $site_config = Yaml::parse(file_get_contents($site_file));
             try {
-                $mysql_stack->deleteUser($site_config['db_user']);
-                $mysql_stack->deleteDb($site_config['db_name']);
+                $mysql_stack->deleteUser($site_config['site_db_user']);
+                $mysql_stack->deleteDb($site_config['site_db_name']);
             } catch (\Exception $e) {
                 $utils->echoError('Error deleting site '.$site_name.' user & database: ' . $e->getMessage());
                 return false;

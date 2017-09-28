@@ -1,4 +1,2 @@
-dependencies:
-    - php
 commands:
     - echo '<?php phpinfo();' > {{site_webdir}}/index.php
