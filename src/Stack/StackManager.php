@@ -22,6 +22,9 @@ class StackManager
         $this->utils = new Utils();
         $this->filesystem = new Filesystem();
         $this->stack = new Db('stack');
+        if (!$this->stack->exists()) {
+            $this->stack->create();
+        }
         $this->stack_config = $this->stack->read();
 
         $this->stack_component_name = $stack_component_name;
