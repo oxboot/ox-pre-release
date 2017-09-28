@@ -27,6 +27,10 @@ class StackInstall extends BaseCommand
          */
         $stack_component = new StackManager($input->getArgument('stack_component'));
 
+        if (!$stack_component->checkRegister()) {
+            return false;
+        }
+
         if ($stack_component->checkInstall()) {
             return false;
         }

@@ -15,7 +15,7 @@ class StackUninstall extends BaseCommand
         $this
             ->setName('stack:uninstall')
             ->setDescription('Delete an existing site')
-            ->setHelp('This command allows you to delete an existing site')
+            ->setHelp('This command allows you to uninstall stack component')
             ->addArgument('stack_component', InputArgument::REQUIRED, 'Stack component')
             ->addOption('no-prompt', null, InputOption::VALUE_NONE, 'No prompt option')
         ;
@@ -24,15 +24,31 @@ class StackUninstall extends BaseCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         /**
+         * @var \Symfony\Component\Filesystem\Filesystem $filesystem
+         * @var \Ox\App\Utils $utils
+         * @var \Noodlehaus\Config $config
+         */
+        $filesystem = $this->app['filesystem'];
+        $utils = $this->app['utils'];
+        $config = $this->app['config'];
+
+        /**
          * Arguments from user input
          */
-        $stack_component = new StackManager($input->getArgument('stack_component'));
+        $stack_component = $input->getArgument('stack_component');
+        $stack_component_class = new StackManager($stack_component);
         $no_prompt = $input->getOption('no-prompt');
 
-        if (!$stack_component->checkInstall()) {
+        if (!$stack_component_class->checkRegister()) {
+            $utils->echoError('Stack component: '.$stack_component.' not registered');
             return false;
         }
-        $stack_component->uninstall();
+
+        if (!$stack_component_class->checkInstall()) {
+            $utils->echoError('Stack component: '.$stack_component.' already installed');
+            return false;
+        }
+        $stack_component_class->uninstall();
         return true;
     }
 }
