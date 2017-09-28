@@ -25,20 +25,20 @@ script:
     - sudo ./ox.php site:create site.dev
     - sudo cat /var/lib/ox/sites/site.dev.yml
     - sudo ./ox.php site:delete site.dev --no-prompt
-    - sudo cat /var/lib/ox/sites/site.dev.yml
+    - test -f /var/lib/ox/sites/site.dev.yml
     - sudo ./ox.php site:create site.dev --package=default
     - sudo cat /var/lib/ox/sites/site.dev.yml
     - sudo ./ox.php site:delete site.dev --no-prompt
-    - sudo cat /var/lib/ox/sites/site.dev.yml
+    - test -f /var/lib/ox/sites/site.dev.yml
     - sudo ./ox.php site:create site.dev --package=mysql
     - sudo cat /var/lib/ox/sites/site.dev.yml
     - sudo ./ox.php site:delete site.dev --no-prompt
-    - sudo cat /var/lib/ox/sites/site.dev.yml
+    - test -f /var/lib/ox/sites/site.dev.yml
     - sudo ./ox.php site:create site.dev --package=grav
     - sudo cat /var/lib/ox/sites/site.dev.yml
     - sudo ./ox.php site:delete site.dev --no-prompt
-    - sudo cat /var/lib/ox/sites/site.dev.yml
+    - test -f /var/lib/ox/sites/site.dev.yml
     - sudo ./ox.php site:create site.dev --package=wordpress
     - sudo cat /var/lib/ox/sites/site.dev.yml
     - sudo ./ox.php site:delete site.dev --no-prompt
-    - sudo cat /var/lib/ox/sites/site.dev.yml
+    - test -f /var/lib/ox/sites/site.dev.yml
