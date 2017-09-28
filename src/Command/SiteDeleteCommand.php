@@ -33,8 +33,6 @@ class SiteDeleteCommand extends BaseCommand
         $utils = $this->app['utils'];
         $config = $this->app['config'];
 
-        $mysql_stack = new MySQL();
-
         /**
          * Arguments from user input
          */
@@ -75,12 +73,15 @@ class SiteDeleteCommand extends BaseCommand
 
         if (file_exists($site_file)) {
             $site_config = Yaml::parse(file_get_contents($site_file));
-            try {
-                $mysql_stack->deleteUser($site_config['site_db_user']);
-                $mysql_stack->deleteDb($site_config['site_db_name']);
-            } catch (\Exception $e) {
-                $utils->echoError('Error deleting site '.$site_name.' user & database: ' . $e->getMessage());
-                return false;
+            if (isset($site_config['site_db_name'])) {
+                try {
+                    $mysql_stack = new MySQL();
+                    $mysql_stack->deleteUser($site_config['site_db_user']);
+                    $mysql_stack->deleteDb($site_config['site_db_name']);
+                } catch (\Exception $e) {
+                    $utils->echoError('Error deleting site '.$site_name.' user & database: ' . $e->getMessage());
+                    return false;
+                }
             }
             $filesystem->remove($site_file);
         }
