@@ -1,12 +1,12 @@
 <?php
-namespace Ox\Stack;
+namespace Ox\Stack\Component;
 
 use Ox\App\Utils;
 use Symfony\Component\Filesystem\Filesystem;
 
-class WpCLI
+class WpCli extends AbstractComponent
 {
-    public static function install()
+    public function install()
     {
         $utils = new Utils();
         $filesystem = new Filesystem();
@@ -21,5 +21,10 @@ class WpCLI
             return false;
         }
         return true;
+    }
+
+    public function uninstall()
+    {
+        // TODO: Implement uninstall() method.
     }
 }

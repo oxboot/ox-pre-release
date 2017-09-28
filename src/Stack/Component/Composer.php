@@ -1,5 +1,5 @@
 <?php
-namespace Ox\Stack;
+namespace Ox\Stack\Component;
 
 use Ox\App\Utils;
 use Symfony\Component\Filesystem\Filesystem;

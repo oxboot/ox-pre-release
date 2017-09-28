@@ -1,5 +1,5 @@
 <?php
-namespace Ox\Stack;
+namespace Ox\Stack\Component;
 
 use Ox\App\Utils;
 use Symfony\Component\Filesystem\Filesystem;
@@ -17,7 +17,7 @@ abstract class AbstractComponent
         $this->utils = new Utils();
         $this->filesystem = new Filesystem();
         try {
-            $this->config = new Config(OX_CONFIG_FOLDER . 'ox.ini');
+            $this->config = new Config(OX_CONFIG_FOLDER.'/ox.ini');
         } catch (Exception $e) {
             die('Error loading Ox config: ' . $e->getMessage());
         }

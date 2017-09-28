@@ -1,10 +1,10 @@
 <?php
-namespace Ox\Stack;
+namespace Ox\Stack\Component;
 
 use Ox\App\Utils;
 use Symfony\Component\Filesystem\Filesystem;
 
-class PHP
+class Php extends AbstractComponent
 {
     private static $php_www_config_file = '/etc/php/7.1/fpm/pool.d/www.conf';
     private static $php_www_old_config_file = '/etc/php/7.1/fpm/pool.d/www.conf.bak';
@@ -26,5 +26,10 @@ class PHP
             return false;
         }
         return true;
+    }
+
+    public function uninstall()
+    {
+        // TODO: Implement uninstall() method.
     }
 }

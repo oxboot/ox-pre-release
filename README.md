@@ -29,7 +29,7 @@ ox site:info domain.dev
 ```bash
 ox site:list
 ```
-### Delete Website with database & all configs
+### Delete website with database & all configs
 ```bash
 ox site:delete domain.dev
 ```

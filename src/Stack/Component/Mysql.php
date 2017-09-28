@@ -1,10 +1,10 @@
 <?php
-namespace Ox\Stack;
+namespace Ox\Stack\Component;
 
 use Ox\App\Utils;
 use Symfony\Component\Filesystem\Filesystem;
 
-class MYSQL
+class Mysql extends AbstractComponent
 {
     const MYSQL_CONFIG_PATH = '/etc/mysql';
     const MYSQL_CONFIG_FILE = '/etc/mysql/conf.d/my.cnf';
